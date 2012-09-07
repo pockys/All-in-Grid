@@ -15,11 +15,10 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.main);
 
 		gridView = (GridView) findViewById(R.id.grid);
-		// ContactAdapter contactAdapter = new ContactAdapter(this);
-		// Log.d(TAG, "contactAdapter generated");
-
 		gridView.setAdapter(new ContactAdapter(this));
 
+		
+		
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
