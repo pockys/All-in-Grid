@@ -1,20 +1,29 @@
 package org.pockys.allingrid;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
+import android.widget.GridView;
 
 public class MainActivity extends Activity {
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
+	static final String TAG = "MainActivity";
+	private GridView gridView;
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
-    }
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		gridView = (GridView) findViewById(R.id.grid);
+		// ContactAdapter contactAdapter = new ContactAdapter(this);
+		// Log.d(TAG, "contactAdapter generated");
+
+		gridView.setAdapter(new ContactAdapter(this));
+
+	}
+
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
 }
