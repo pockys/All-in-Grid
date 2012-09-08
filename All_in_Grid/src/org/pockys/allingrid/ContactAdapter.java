@@ -1,11 +1,9 @@
 package org.pockys.allingrid;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,17 +21,16 @@ public class ContactAdapter extends BaseAdapter {
 	private final Bitmap defaultBitmap;
 
 	private Context context;
-	private Cursor contactsCursor;
 	private LayoutInflater layoutInflater;
 
-	private Contact[] contactsList;
+	private Contact[] mContactsList;
 
-	private class Contact {
+	static class Contact {
 		String displayName;
 		Uri thumbnailUri;
 	}
 
-	public ContactAdapter(Context _context) {
+	public ContactAdapter(Context _context, Contact[] contactList) {
 		super();
 		context = _context;
 
@@ -41,49 +38,14 @@ public class ContactAdapter extends BaseAdapter {
 		defaultBitmap = BitmapFactory.decodeResource(context.getResources(),
 				R.drawable.ic_launcher);
 
-		contactsCursor = getContacts();
+		mContactsList = contactList;
 
-		contactsList = new Contact[contactsCursor.getCount()];
-
-		for (int i = 0; contactsCursor.moveToNext(); i++) {
-			String displayName = contactsCursor
-					.getString(contactsCursor
-							.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-			String uriString = contactsCursor.getString(contactsCursor
-					.getColumnIndex(ContactsContract.Contacts.PHOTO_URI));
-			// if (displayName.length() >= MAX_NAME_LEN)
-			// displayName = displayName.substring(0, MAX_NAME_LEN) + "...";
-
-			// displayName.
-
-			Uri thumbnailUri = null;
-			if (uriString != null)
-				thumbnailUri = Uri.parse(uriString);
-
-			contactsList[i] = new Contact();
-			contactsList[i].displayName = displayName;
-			contactsList[i].thumbnailUri = thumbnailUri;
-		}
-
-	}
-
-	public Cursor getContacts() {
-
-		Uri contactUri = ContactsContract.Contacts.CONTENT_URI;
-		String[] PROJECTION = new String[] { ContactsContract.Contacts._ID,
-				ContactsContract.Contacts.PHOTO_URI,
-				ContactsContract.Contacts.DISPLAY_NAME };
-		String CONTACTS_SORT_ORDER = ContactsContract.Contacts.DISPLAY_NAME
-				+ " COLLATE LOCALIZED ASC";
-
-		return context.getContentResolver().query(contactUri, PROJECTION, null,
-				null, CONTACTS_SORT_ORDER);
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return contactsList.length;
+		return mContactsList.length;
 	}
 
 	@Override
@@ -106,14 +68,14 @@ public class ContactAdapter extends BaseAdapter {
 
 		// set image
 		ImageView imageView = (ImageView) cell.findViewById(R.id.cell_image);
-		if (contactsList[position].thumbnailUri != null)
-			imageView.setImageURI(contactsList[position].thumbnailUri);
+		if (mContactsList[position].thumbnailUri != null)
+			imageView.setImageURI(mContactsList[position].thumbnailUri);
 		else
 			imageView.setImageBitmap(defaultBitmap);
 
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
-		textView.setText(contactsList[position].displayName);
+		textView.setText(mContactsList[position].displayName);
 		Log.d(TAG, "generated: " + position);
 
 		return cell;
