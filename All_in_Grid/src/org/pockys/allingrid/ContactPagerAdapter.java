@@ -31,8 +31,8 @@ public class ContactPagerAdapter extends PagerAdapter {
 		int viewNum = mContactsCursor.getCount() / MAX_CELL_NUM;
 		mPagedGridViews = new GridView[viewNum];
 		for (int i = 0; i < viewNum; i++) {
-			mPagedGridViews[i] = (GridView) LayoutInflater.from(mContext).inflate(
-					R.layout.grid_view, null);
+			mPagedGridViews[i] = (GridView) LayoutInflater.from(mContext)
+					.inflate(R.layout.grid_view, null);
 			mPagedGridViews[i].setAdapter(new ContactAdapter(mContext,
 					getContactsList()));
 		}
