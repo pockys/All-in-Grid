@@ -7,31 +7,24 @@
     <HorizontalScrollView
         android:id="@+id/menu_field"
         android:layout_width="fill_parent"
-        android:layout_height="77dp"
+        android:layout_height="98dp"
         android:layout_alignParentBottom="true"
         android:layout_gravity="center" >
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-            
-            
-        </LinearLayout>
     </HorizontalScrollView>
 
-    <LinearLayout
+    <GridView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/grid_field"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_above="@id/menu_field"
-        android:layout_alignParentTop="true"
         android:layout_margin="10dp"
-        android:paddingBottom="5dp" >
-
-        <include
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            layout="@layout/grid_view" />
-    </LinearLayout>
+        android:columnWidth="60dp"
+        android:gravity="center"
+        android:horizontalSpacing="10dp"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="10dp" />
 
 </RelativeLayout>
