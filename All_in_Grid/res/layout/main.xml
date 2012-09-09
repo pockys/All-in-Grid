@@ -4,29 +4,20 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <GridView
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v4.view.ViewPager
         android:id="@+id/menu_field"
         android:layout_width="fill_parent"
-        android:layout_height="78dp"
+        android:layout_height="80dp"
         android:layout_alignParentBottom="true"
         android:layout_margin="10dp"
-        android:layout_marginTop="10dp"
-        android:gravity="fill"
-        android:spacing="10dp" />
+        android:layout_marginTop="10dp" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/grid_field"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:layout_above="@id/menu_field"
         android:layout_alignParentTop="true"
-        android:layout_margin="10dp"
-        android:columnWidth="60dp"
-        android:gravity="center"
-        android:horizontalSpacing="10dp"
-        android:numColumns="auto_fit"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="10dp" />
+        android:padding="10dp" />
 
 </RelativeLayout>

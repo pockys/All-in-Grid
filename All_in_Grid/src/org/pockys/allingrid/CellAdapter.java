@@ -1,10 +1,9 @@
 package org.pockys.allingrid;
 
+import java.util.ArrayList;
+
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,40 +11,31 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ContactAdapter extends BaseAdapter {
+public class CellAdapter extends BaseAdapter {
 
-	// private static final int MAX_CELL_NUM = 16;
-	// private static final int MAX_NAME_LEN = 8;
 	static final String TAG = "ContactAdapter";
-
-	private final Bitmap defaultBitmap;
 
 	private Context context;
 	private LayoutInflater layoutInflater;
 
-	private Contact[] mContactsList;
+	private ArrayList<CellInfo> mCellInfoList;
 
 	static class Contact {
 		String displayName;
 		Uri thumbnailUri;
 	}
 
-	public ContactAdapter(Context _context, Contact[] contactList) {
+	public CellAdapter(Context _context, ArrayList<CellInfo> cellInfoList) {
 		super();
 		context = _context;
-
 		layoutInflater = LayoutInflater.from(context);
-		defaultBitmap = BitmapFactory.decodeResource(context.getResources(),
-				R.drawable.ic_launcher);
-
-		mContactsList = contactList;
-
+		mCellInfoList = cellInfoList;
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return mContactsList.length;
+		return mCellInfoList.size();
 	}
 
 	@Override
@@ -56,7 +46,7 @@ public class ContactAdapter extends BaseAdapter {
 
 	@Override
 	public long getItemId(int position) {
-		return position;
+		return 0;
 	}
 
 	@Override
@@ -68,15 +58,13 @@ public class ContactAdapter extends BaseAdapter {
 
 		// set image
 		ImageView imageView = (ImageView) cell.findViewById(R.id.cell_image);
-		if (mContactsList[position].thumbnailUri != null)
-			imageView.setImageURI(mContactsList[position].thumbnailUri);
-		else
-			imageView.setImageBitmap(defaultBitmap);
+		if (!mCellInfoList.get(position).isThereNoThumbnail())
+			imageView
+					.setImageURI(mCellInfoList.get(position).getThumbnailUri());
 
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
-		textView.setText(mContactsList[position].displayName);
-		Log.d(TAG, "generated: " + position);
+		textView.setText(mCellInfoList.get(position).getDisplayName());
 
 		return cell;
 
