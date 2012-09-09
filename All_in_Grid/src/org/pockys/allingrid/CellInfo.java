@@ -4,10 +4,10 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 
 public class CellInfo {
-	private String mDisplayName;
-	private Uri mThumbnailUri;
-	private Bitmap mThumbnailBitmap;
-	private int mResId = -1;
+	protected String mDisplayName;
+	protected Uri mThumbnailUri;
+	protected Bitmap mThumbnailBitmap;
+	protected int mResId = -1;
 
 	public String getDisplayName() {
 		return mDisplayName;
@@ -32,15 +32,14 @@ public class CellInfo {
 	public void setThumbnail(Bitmap thumbnailBitmap) {
 		this.mThumbnailBitmap = thumbnailBitmap;
 	}
-	
+
 	public void setThumbnail(int resId) {
 		mResId = resId;
 	}
-	
+
 	public boolean isThereNoThumbnail() {
 		return mThumbnailUri == null && mThumbnailBitmap == null
 				&& mResId == -1;
 	}
-	
-	
+
 }
