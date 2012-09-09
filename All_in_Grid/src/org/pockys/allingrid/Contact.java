@@ -32,6 +32,11 @@ public class Contact {
 			String uriString = mContactsCursor.getString(mContactsCursor
 					.getColumnIndex(ContactsContract.Contacts.PHOTO_URI));
 
+			/*shohei write*/
+			String Id = mContactsCursor.getString(mContactsCursor
+					.getColumnIndex(ContactsContract.Contacts._ID));
+			/*shohei write*/
+			
 			Uri thumbnailUri = null;
 			if (uriString != null)
 				thumbnailUri = Uri.parse(uriString);
@@ -39,7 +44,10 @@ public class Contact {
 			CellInfo contact = new CellInfo();
 			contact.setDisplayName(displayName);
 			contact.setThumbnail(thumbnailUri);
-
+			/*shohei write*/
+			long temp = Long.valueOf(Id);
+			contact.setId( temp );
+			/*shohei write*/
 			contactsArrayList.add(contact);
 		}
 

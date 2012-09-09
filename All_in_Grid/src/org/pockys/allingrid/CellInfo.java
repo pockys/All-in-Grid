@@ -8,7 +8,20 @@ public class CellInfo {
 	protected Uri mThumbnailUri;
 	protected Bitmap mThumbnailBitmap;
 	protected int mResId = -1;
+	
+	/*shohei write*/
+	protected long mId;
 
+	public long getmId() {
+		return mId;
+	}
+	
+	public void setId(long id) {
+		mId = id;
+	}
+	
+	/*shohei write*/
+	
 	public String getDisplayName() {
 		return mDisplayName;
 	}
