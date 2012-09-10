@@ -31,14 +31,17 @@ public class Contact {
 					.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 			String uriString = mContactsCursor.getString(mContactsCursor
 					.getColumnIndex(ContactsContract.Contacts.PHOTO_URI));
+			String contactIdString = mContactsCursor.getString(mContactsCursor
+					.getColumnIndex(ContactsContract.Contacts._ID));
 
 			Uri thumbnailUri = null;
 			if (uriString != null)
 				thumbnailUri = Uri.parse(uriString);
 
-			CellInfo contact = new CellInfo();
+			ContactCellInfo contact = new ContactCellInfo();
 			contact.setDisplayName(displayName);
 			contact.setThumbnail(thumbnailUri);
+			contact.setContactId(Integer.valueOf(contactIdString));
 
 			contactsArrayList.add(contact);
 		}

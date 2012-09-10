@@ -33,6 +33,10 @@ public class MainMenu {
 		sizeCell.setDisplayName("Size");
 		mMenuList.add(sizeCell);
 
+		CellInfo searchCell = new CellInfo();
+		searchCell.setDisplayName("Search");
+		mMenuList.add(searchCell);
+
 		CellInfo testCell = new CellInfo();
 		testCell.setDisplayName("Test");
 		mMenuList.add(testCell);

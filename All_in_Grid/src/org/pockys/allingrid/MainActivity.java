@@ -3,7 +3,10 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener {
 
@@ -29,7 +33,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		super.onResume();
 
 		gridField = (ViewPager) findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(3, 4)));
+		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(4, 4)));
 
 		mainField = (ViewPager) findViewById(R.id.menu_field);
 		mainField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
@@ -99,18 +103,22 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-		// Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT)
-		// .show();
 
 		TextView textView = (TextView) v.findViewById(R.id.cell_label);
 		String displayName = textView.getText().toString();
-		textView.setVisibility(View.INVISIBLE);
 
-		// Intent intent = new Intent(Intent.ACTION_VIEW);
-		// Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
-		// String.valueOf(contactID));
-		// intent.setData(uri);
-		// this.startActivity(intent);
+		Toast.makeText(
+				MainActivity.this,
+				"[" + position + "] " + displayName + " tag: "
+						+ v.getTag().toString(), Toast.LENGTH_SHORT).show();
+
+		String contactIdString = v.getTag().toString();
+
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
+				contactIdString);
+		intent.setData(uri);
+		this.startActivity(intent);
 
 	}
 }

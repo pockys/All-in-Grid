@@ -56,15 +56,19 @@ public class CellAdapter extends BaseAdapter {
 		if (convertView == null)
 			cell = layoutInflater.inflate(R.layout.cell, null);
 
+		CellInfo cellInfo = mCellInfoList.get(position);
+
 		// set image
 		ImageView imageView = (ImageView) cell.findViewById(R.id.cell_image);
-		if (!mCellInfoList.get(position).isThereNoThumbnail())
-			imageView
-					.setImageURI(mCellInfoList.get(position).getThumbnailUri());
+		if (!cellInfo.isThereNoThumbnail())
+			imageView.setImageURI(cellInfo.getThumbnailUri());
 
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
-		textView.setText(mCellInfoList.get(position).getDisplayName());
+		textView.setText(cellInfo.getDisplayName());
+
+		if (cellInfo instanceof ContactCellInfo)
+			cell.setTag(((ContactCellInfo) cellInfo).getContactId());
 
 		return cell;
 
