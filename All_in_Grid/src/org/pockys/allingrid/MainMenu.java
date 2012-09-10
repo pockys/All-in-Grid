@@ -3,7 +3,15 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class MainMenu {
+import android.content.Context;
+import android.content.Intent;
+import android.provider.ContactsContract;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView;
+
+public class MainMenu implements OnItemClickListener {
 
 	private static final String TAG = "MainMenu";
 
@@ -11,11 +19,14 @@ public class MainMenu {
 
 	private Iterator<CellInfo> it;
 
+	private Context mContext;
+
 	public int getSize() {
 		return mMenuList.size();
 	}
 
-	public MainMenu() {
+	public MainMenu(Context context) {
+		mContext = context;
 
 		CellInfo sortCell = new CellInfo();
 		sortCell.setDisplayName("Sort");
@@ -54,6 +65,19 @@ public class MainMenu {
 			menuList.add(it.next());
 
 		return menuList;
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+		TextView textView = (TextView) v.findViewById(R.id.cell_label);
+		String displayName = textView.getText().toString();
+
+		if (displayName == "Add") {
+			Intent intent = new Intent(Intent.ACTION_INSERT);
+			intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+			mContext.startActivity(intent);
+		}
+
 	}
 
 }

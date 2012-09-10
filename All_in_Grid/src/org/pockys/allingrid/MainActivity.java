@@ -3,25 +3,25 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.QuickContactBadge;
 
 public class MainActivity extends Activity implements OnItemClickListener {
 
 	static final String TAG = "MainActivity";
 	private ViewPager gridField;
 	private ViewPager mainField;
+	private int gridFieldCurrentItem = 0;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -31,9 +31,11 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 	public void onResume() {
 		super.onResume();
+		Log.d(TAG, "onResume: gridFieldCurrentItem: " + gridFieldCurrentItem);
 
 		gridField = (ViewPager) findViewById(R.id.grid_field);
 		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(4, 4)));
+		gridField.setCurrentItem(gridFieldCurrentItem);
 
 		mainField = (ViewPager) findViewById(R.id.menu_field);
 		mainField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
@@ -42,7 +44,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 	private ArrayList<GridView> getGridFieldViews(final int numColumns,
 			final int numRows) {
-		ArrayList<GridView> gridViews = new ArrayList<GridView>();
+		ArrayList<GridView> gridViewList = new ArrayList<GridView>();
 
 		Contact contact = new Contact(this);
 		final int numCells = numColumns * numRows;
@@ -54,7 +56,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(this);
 
-			gridViews.add(gridView);
+			gridViewList.add(gridView);
 		}
 		if (contact.getSize() % numCells != 0) {
 			GridView gridView = (GridView) LayoutInflater.from(this).inflate(
@@ -64,17 +66,17 @@ public class MainActivity extends Activity implements OnItemClickListener {
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(this);
 
-			gridViews.add(gridView);
+			gridViewList.add(gridView);
 		}
 
-		return gridViews;
+		return gridViewList;
 	}
 
 	private ArrayList<GridView> getMenuFieldViews(final int numColumns) {
-		ArrayList<GridView> menuViews = new ArrayList<GridView>();
+		ArrayList<GridView> menuViewList = new ArrayList<GridView>();
 		final int numCells = numColumns;
 
-		MainMenu mainMenu = new MainMenu();
+		MainMenu mainMenu = new MainMenu(this);
 
 		for (int i = 0; i < mainMenu.getSize() / numCells; i++) {
 			GridView menuView = (GridView) LayoutInflater.from(this).inflate(
@@ -82,7 +84,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(this, mainMenu
 					.getMenuList(numCells)));
-			menuViews.add(menuView);
+			menuView.setOnItemClickListener(mainMenu);
+			menuViewList.add(menuView);
 		}
 		if (mainMenu.getSize() % numCells != 0) {
 			GridView menuView = (GridView) LayoutInflater.from(this).inflate(
@@ -90,10 +93,11 @@ public class MainActivity extends Activity implements OnItemClickListener {
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(this, mainMenu
 					.getMenuList(numCells)));
-			menuViews.add(menuView);
+			menuView.setOnItemClickListener(mainMenu);
+			menuViewList.add(menuView);
 		}
 
-		return menuViews;
+		return menuViewList;
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -104,21 +108,27 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-		TextView textView = (TextView) v.findViewById(R.id.cell_label);
-		String displayName = textView.getText().toString();
-
-		Toast.makeText(
-				MainActivity.this,
-				"[" + position + "] " + displayName + " tag: "
-						+ v.getTag().toString(), Toast.LENGTH_SHORT).show();
-
 		String contactIdString = v.getTag().toString();
 
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
-				contactIdString);
-		intent.setData(uri);
-		this.startActivity(intent);
+		// get contact uri from contact id
+		Uri contactUri = Uri.withAppendedPath(
+				ContactsContract.Contacts.CONTENT_URI,
+				Uri.encode(contactIdString));
+		// Toast.makeText(MainActivity.this,
+		// "contactUri: " + contactUri + " contactId: " + contactIdString,
+		// Toast.LENGTH_SHORT).show();
 
+		QuickContactBadge badge = new QuickContactBadge(this);
+		badge.assignContactUri(contactUri);
+		badge.setMode(ContactsContract.QuickContact.MODE_LARGE);
+		badge.setImageResource(R.drawable.ic_launcher);
+		badge.performClick();
+
+	}
+
+	public void onPause() {
+		super.onPause();
+		gridFieldCurrentItem = gridField.getCurrentItem();
+		Log.d(TAG, "onPause: gridFieldCurrentItem: " + gridFieldCurrentItem);
 	}
 }
