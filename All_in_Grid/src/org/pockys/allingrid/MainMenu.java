@@ -3,19 +3,31 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class MainMenu {
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.provider.ContactsContract;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
+import android.widget.TextView;
+
+public class MainMenu implements OnItemClickListener {
 
 	private static final String TAG = "MainMenu";
 
 	private ArrayList<CellInfo> mMenuList = new ArrayList<CellInfo>();
-
 	private Iterator<CellInfo> it;
+	private Context mContext;
 
 	public int getSize() {
 		return mMenuList.size();
 	}
 
-	public MainMenu() {
+	public MainMenu(Context context) {
+		mContext = context;
 
 		CellInfo sortCell = new CellInfo();
 		sortCell.setDisplayName("Sort");
@@ -32,6 +44,10 @@ public class MainMenu {
 		CellInfo sizeCell = new CellInfo();
 		sizeCell.setDisplayName("Size");
 		mMenuList.add(sizeCell);
+
+		CellInfo searchCell = new CellInfo();
+		searchCell.setDisplayName("Search");
+		mMenuList.add(searchCell);
 
 		CellInfo testCell = new CellInfo();
 		testCell.setDisplayName("Test");
@@ -50,6 +66,34 @@ public class MainMenu {
 			menuList.add(it.next());
 
 		return menuList;
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+		TextView textView = (TextView) v.findViewById(R.id.cell_label);
+		String displayName = textView.getText().toString();
+
+		if (displayName == "Add") {
+			Intent intent = new Intent(Intent.ACTION_INSERT);
+			intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+			mContext.startActivity(intent);
+		} else if (displayName == "Test") {
+			LayoutInflater inflater = LayoutInflater.from(mContext);
+			GridView gridView = (GridView) inflater.inflate(R.layout.grid_view,
+					null);
+			gridView.setAdapter(new CellAdapter(mContext, new Contact(mContext)
+					.getContactsList(16)));
+			gridView.setNumColumns(4);
+			// gridView.setOnItemClickListener(new MainActivity());
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+			builder.setView(gridView).setTitle("Directory Name")
+					.setInverseBackgroundForced(true);
+
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		}
+
 	}
 
 }

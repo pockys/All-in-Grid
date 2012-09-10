@@ -2,70 +2,58 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 
-
-
+import android.app.ActionBar;
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
-import android.widget.TextView;
+import android.widget.QuickContactBadge;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements OnItemClickListener{
+public class MainActivity extends Activity implements OnItemClickListener {
 
 	static final String TAG = "MainActivity";
-	static final String TAG2 = "delete";
 	private ViewPager gridField;
-	private ViewPager mainField;
-	
-	public Cursor contactsCursor;
-	public ContentResolver rs;
+	// private ViewPager menuField;
+	private int gridFieldCurrentItem = 0;
 
-	long ClickId;
-	int Clickposition;
+	// private int menuFieldCurrentItem = 0;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
+
+		ActionBar actionBar = getActionBar();
+		actionBar.show();
 	}
-	
-	
+
 	public void onResume() {
 		super.onResume();
-		
-		ShortAdapter ShortADP =  new ShortAdapter(this);
-		
-		contactsCursor = ShortADP.ReturnCursor();
-		rs = ShortADP.ReturnResolver();
+		Log.d(TAG, "onResume: gridFieldCurrentItem: " + gridFieldCurrentItem);
 
 		gridField = (ViewPager) findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(3, 4)));
-		//setOnClickListener( new ClickEvent(contactsCursor, rs));
+		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(4, 4)));
+		gridField.setCurrentItem(gridFieldCurrentItem);
 
-		mainField = (ViewPager) findViewById(R.id.menu_field);
-		mainField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
+		// menuField = (ViewPager) findViewById(R.id.menu_field);
+		// menuField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
+		// menuField.setCurrentItem(menuFieldCurrentItem);
 
 	}
-
-	
 
 	private ArrayList<GridView> getGridFieldViews(final int numColumns,
 			final int numRows) {
-		ArrayList<GridView> gridViews = new ArrayList<GridView>();
+		ArrayList<GridView> gridViewList = new ArrayList<GridView>();
 
 		Contact contact = new Contact(this);
 		final int numCells = numColumns * numRows;
@@ -77,7 +65,7 @@ public class MainActivity extends Activity implements OnItemClickListener{
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(this);
 
-			gridViews.add(gridView);
+			gridViewList.add(gridView);
 		}
 		if (contact.getSize() % numCells != 0) {
 			GridView gridView = (GridView) LayoutInflater.from(this).inflate(
@@ -87,17 +75,17 @@ public class MainActivity extends Activity implements OnItemClickListener{
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(this);
 
-			gridViews.add(gridView);
+			gridViewList.add(gridView);
 		}
 
-		return gridViews;
+		return gridViewList;
 	}
 
 	private ArrayList<GridView> getMenuFieldViews(final int numColumns) {
-		ArrayList<GridView> menuViews = new ArrayList<GridView>();
+		ArrayList<GridView> menuViewList = new ArrayList<GridView>();
 		final int numCells = numColumns;
 
-		MainMenu mainMenu = new MainMenu();
+		MainMenu mainMenu = new MainMenu(this);
 
 		for (int i = 0; i < mainMenu.getSize() / numCells; i++) {
 			GridView menuView = (GridView) LayoutInflater.from(this).inflate(
@@ -105,7 +93,8 @@ public class MainActivity extends Activity implements OnItemClickListener{
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(this, mainMenu
 					.getMenuList(numCells)));
-			menuViews.add(menuView);
+			menuView.setOnItemClickListener(mainMenu);
+			menuViewList.add(menuView);
 		}
 		if (mainMenu.getSize() % numCells != 0) {
 			GridView menuView = (GridView) LayoutInflater.from(this).inflate(
@@ -113,10 +102,11 @@ public class MainActivity extends Activity implements OnItemClickListener{
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(this, mainMenu
 					.getMenuList(numCells)));
-			menuViews.add(menuView);
+			menuView.setOnItemClickListener(mainMenu);
+			menuViewList.add(menuView);
 		}
 
-		return menuViews;
+		return menuViewList;
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -124,52 +114,61 @@ public class MainActivity extends Activity implements OnItemClickListener{
 		return true;
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// same as using a normal menu
+		switch (item.getItemId()) {
+		case R.id.menu_phone:
+			makeToast("Phone");
+			break;
+		case R.id.menu_sort:
+			makeToast("Sort");
+			break;
+		case R.id.menu_search:
+			makeToast("Search");
+			break;
+		case R.id.menu_edit:
+			makeToast("Edit");
+			break;
+		case R.id.menu_add:
+			makeToast("Add");
+			break;
+		}
+
+		return true;
+	}
+
+	public void makeToast(String message) {
+		// with jam obviously
+		Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-//		Toast.makeText(MainActivity.this, "" + id, Toast.LENGTH_SHORT).show();
-		ClickId = id;
-		Clickposition = position;
-		delete(Clickposition,contactsCursor,rs,id);
-		
-	}
 
-	public void delete(int Clickposition,Cursor cr, ContentResolver rs,long id){
-//		Log.d(TAG, "Clickposition::" + Clickposition );
-		Uri uri = null;
-		long deleteId;
-		int count = Clickposition;
-		Toast.makeText(MainActivity.this, "" + count, Toast.LENGTH_SHORT).show();
-		Log.i(TAG2, "count::" + count );
-		cr.moveToFirst();
-		for(int j = 0; j < cr.getCount(); j++){
-		if(j == count ){
-			deleteId = cr.getLong(cr.getColumnIndexOrThrow("_id"));
-			uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, deleteId);
-			
-			}
-			cr.moveToNext();
-		}
-	rs.delete(uri, null, null);
+		// get contact uri from contact id
+
+		ContactCellInfo contactCellInfo = (ContactCellInfo) v.getTag();
+		String contactIdString = String.valueOf(contactCellInfo.getContactId());
+		Uri contactUri = Uri.withAppendedPath(
+				ContactsContract.Contacts.CONTENT_URI,
+				Uri.encode(contactIdString));
+
+		QuickContactBadge badge = new QuickContactBadge(this);
+		badge.assignContactUri(contactUri);
+		badge.setMode(ContactsContract.QuickContact.MODE_LARGE);
+		((ViewGroup) v).addView(badge);
+		badge.performClick();
+		((ViewGroup) v).removeView(badge);
 
 	}
 
-	//@Override
-	//public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-		
-		
-		// Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT)
-		// .show();
+	public void onPause() {
+		super.onPause();
+		gridFieldCurrentItem = gridField.getCurrentItem();
+		Log.d(TAG, "onPause: gridFieldCurrentItem: " + gridFieldCurrentItem);
 
-//		TextView textView = (TextView) v.findViewById(R.id.cell_label);
-//		String displayName = textView.getText().toString();
-//		textView.setVisibility(View.INVISIBLE);
+		// menuFieldCurrentItem = menuField.getCurrentItem();
 
-		// Intent intent = new Intent(Intent.ACTION_VIEW);
-		// Uri uri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_URI,
-		// String.valueOf(contactID));
-		// intent.setData(uri);
-		// this.startActivity(intent);
-
-	//}
+	}
 }

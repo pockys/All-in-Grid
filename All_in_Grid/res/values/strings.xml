@@ -8,5 +8,7 @@
     <string name="menu_edit">Edit</string>
     <string name="menu_add">Add</string>
     <string name="menu_size">Size</string>
+    <string name="menu_phone">Phone</string>
+    <string name="menu_search">Search</string>
 
 </resources>
