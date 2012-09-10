@@ -67,8 +67,10 @@ public class CellAdapter extends BaseAdapter {
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
 		textView.setText(cellInfo.getDisplayName());
 
-		if (cellInfo instanceof ContactCellInfo)
-			cell.setTag(((ContactCellInfo) cellInfo).getContactId());
+//		if (cellInfo instanceof ContactCellInfo)
+//			cell.setTag(((ContactCellInfo) cellInfo).getContactId());
+		
+		cell.setTag(cellInfo);
 
 		return cell;
 

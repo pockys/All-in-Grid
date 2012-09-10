@@ -2,6 +2,7 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,23 +11,30 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.QuickContactBadge;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener {
 
 	static final String TAG = "MainActivity";
 	private ViewPager gridField;
-	private ViewPager mainField;
+	// private ViewPager menuField;
 	private int gridFieldCurrentItem = 0;
+
+	// private int menuFieldCurrentItem = 0;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
+		ActionBar actionBar = getActionBar();
+		actionBar.show();
 	}
 
 	public void onResume() {
@@ -37,8 +45,9 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(4, 4)));
 		gridField.setCurrentItem(gridFieldCurrentItem);
 
-		mainField = (ViewPager) findViewById(R.id.menu_field);
-		mainField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
+		// menuField = (ViewPager) findViewById(R.id.menu_field);
+		// menuField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
+		// menuField.setCurrentItem(menuFieldCurrentItem);
 
 	}
 
@@ -106,23 +115,51 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	}
 
 	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// same as using a normal menu
+		switch (item.getItemId()) {
+		case R.id.menu_phone:
+			makeToast("Phone");
+			break;
+		case R.id.menu_sort:
+			makeToast("Sort");
+			break;
+		case R.id.menu_search:
+			makeToast("Search");
+			break;
+		case R.id.menu_edit:
+			makeToast("Edit");
+			break;
+		case R.id.menu_add:
+			makeToast("Add");
+			break;
+		}
+
+		return true;
+	}
+
+	public void makeToast(String message) {
+		// with jam obviously
+		Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-		String contactIdString = v.getTag().toString();
-
 		// get contact uri from contact id
+
+		ContactCellInfo contactCellInfo = (ContactCellInfo) v.getTag();
+		String contactIdString = String.valueOf(contactCellInfo.getContactId());
 		Uri contactUri = Uri.withAppendedPath(
 				ContactsContract.Contacts.CONTENT_URI,
 				Uri.encode(contactIdString));
-		// Toast.makeText(MainActivity.this,
-		// "contactUri: " + contactUri + " contactId: " + contactIdString,
-		// Toast.LENGTH_SHORT).show();
 
 		QuickContactBadge badge = new QuickContactBadge(this);
 		badge.assignContactUri(contactUri);
 		badge.setMode(ContactsContract.QuickContact.MODE_LARGE);
-		badge.setImageResource(R.drawable.ic_launcher);
+		((ViewGroup) v).addView(badge);
 		badge.performClick();
+		((ViewGroup) v).removeView(badge);
 
 	}
 
@@ -130,5 +167,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		super.onPause();
 		gridFieldCurrentItem = gridField.getCurrentItem();
 		Log.d(TAG, "onPause: gridFieldCurrentItem: " + gridFieldCurrentItem);
+
+		// menuFieldCurrentItem = menuField.getCurrentItem();
+
 	}
 }
