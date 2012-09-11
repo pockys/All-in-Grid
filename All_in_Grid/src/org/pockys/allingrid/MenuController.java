@@ -30,6 +30,7 @@ public class MenuController implements OnItemClickListener {
 	public MenuController(Context context) {
 		mContext = context;
 		mGroupTitleCursor = getGroupTitles();
+
 	}
 
 	private Cursor getGroupTitles() {
@@ -121,9 +122,8 @@ public class MenuController implements OnItemClickListener {
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-		GroupCellInfo groupCellInfo = (GroupCellInfo) v.getTag();
-		// MainActivity.makeToast(mContext, groupCellInfo.getDisplayName());
 
+		GroupCellInfo groupCellInfo = (GroupCellInfo) v.getTag();
 		ViewPager gridField = (ViewPager) ((Activity) mContext)
 				.findViewById(R.id.grid_field);
 		ContactController contactController = null;
@@ -144,8 +144,23 @@ public class MenuController implements OnItemClickListener {
 
 		}
 
+		Log.d(TAG, "current group: " + MainActivity.getCurrentGroupTitle()
+				+ " current item : " + MainActivity.getGridFieldCurrentItem());
+
+		int currentItem = 0;
+		if (!groupTitle.equals(MainActivity.getCurrentGroupTitle())) {
+			MainActivity.saveGridFieldCurrentItem();
+			MainActivity.setCurrentGroupTitle(groupTitle);
+			currentItem = MainActivity.getGridFieldCurrentItem(groupTitle);
+
+			Log.d(TAG, "clicked group: " + groupTitle + " current item: "
+					+ currentItem);
+		}
+
 		gridField.setAdapter(new CellPagerAdapter(contactController
 				.getGridFieldViews(4, 4)));
+		gridField.setCurrentItem(currentItem);
+
 	}
 
 }
