@@ -9,14 +9,16 @@ import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.QuickContactBadge;
 
-public class ContactController implements OnItemClickListener {
+public class ContactController implements OnItemClickListener,
+		OnItemLongClickListener {
 
-	private Context mContext;
+	private Context mContext; 
 	private Cursor mContactsCursor;
 
 	public ContactController(Context context) {
@@ -35,7 +37,7 @@ public class ContactController implements OnItemClickListener {
 	private ArrayList<CellInfo> getContactsList(int maxSize) {
 
 		ArrayList<CellInfo> contactsArrayList = new ArrayList<CellInfo>();
-		
+
 		for (int i = 0; mContactsCursor.moveToNext() && i < maxSize; i++) {
 
 			String displayName = mContactsCursor.getString(mContactsCursor
@@ -122,6 +124,13 @@ public class ContactController implements OnItemClickListener {
 		badge.performClick();
 		((ViewGroup) v).removeView(badge);
 
+	}
+
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
+			long arg3) {
+
+		return false;
 	}
 
 }

@@ -12,16 +12,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 public class CellAdapter extends BaseAdapter {
 
 	static final String TAG = "ContactAdapter";
 
 	private Context context;
 	private LayoutInflater layoutInflater;
-	 
+
 	SharedPreferences sharedPreferences;
 
-	
 	ArrayList<Integer> iconList = new ArrayList<Integer>();
 
 	private ArrayList<CellInfo> mCellInfoList;
@@ -34,8 +34,9 @@ public class CellAdapter extends BaseAdapter {
 	public CellAdapter(Context _context, ArrayList<CellInfo> cellInfoList) {
 		super();
 
-		sharedPreferences = _context.getSharedPreferences("sharePreferences", Context.MODE_PRIVATE);
-		
+		sharedPreferences = _context.getSharedPreferences("sharePreferences",
+				Context.MODE_PRIVATE);
+
 		iconList.add(R.drawable.ic_action_search);
 		iconList.add(R.drawable.ic_launcher);
 		iconList.add(R.drawable.ic_menu_edit);
@@ -60,8 +61,7 @@ public class CellAdapter extends BaseAdapter {
 		iconList.add(R.drawable.ic_tizukigou_007);
 		iconList.add(R.drawable.ic_tizukigou_008);
 		int iconListSize = iconList.size();
-		
-		
+
 		context = _context;
 		layoutInflater = LayoutInflater.from(context);
 		mCellInfoList = cellInfoList;
@@ -87,47 +87,45 @@ public class CellAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		int randsize = iconList.size();
-//		int rand;
-//		rand = ((int) Math.round (Math.random () * randsize + 0.5))-1; 
-		
+		// int rand;
+		// rand = ((int) Math.round (Math.random () * randsize + 0.5))-1;
+
 		View cell = convertView;
 		if (convertView == null)
 			cell = layoutInflater.inflate(R.layout.cell, null);
 
 		CellInfo cellInfo = mCellInfoList.get(position);
 
-//		
-//		rand = (int)(Math.random() * iconList.size());
-//				int randname =iconList.get(rand);
-		if ( cellInfo instanceof ContactCellInfo ) {
-//			//ImageView imageView = (ImageView) cell.findViewById(R.id.cell_image);/*
-//			imageView.setImageResource(randname );
-//		}*/
+		//
+		// rand = (int)(Math.random() * iconList.size());
+		// int randname =iconList.get(rand);
+		if (cellInfo instanceof ContactCellInfo) {
+			// //ImageView imageView = (ImageView)
+			// cell.findViewById(R.id.cell_image);/*
+			// imageView.setImageResource(randname );
+			// }*/
 			int contactId = ((ContactCellInfo) cellInfo).getContactId();
-			
-			
-					
-			int rand = sharedPreferences.getInt(Integer.toString(contactId), 0);			 
-			if(rand == 0){
-				
+
+			int rand = sharedPreferences.getInt(Integer.toString(contactId), 0);
+			if (rand == 0) {
+
 				SharedPreferences.Editor editor = sharedPreferences.edit();
-				rand = (int)(Math.random() * iconList.size()) ;
+				rand = (int) (Math.random() * iconList.size());
 				editor.putInt(Integer.toString(contactId), rand);
-				editor.commit();				
-				}
-			
+				editor.commit();
+			}
+
 			int randomname = iconList.get(rand);
-			ImageView imageView = (ImageView) cell.findViewById(R.id.cell_image);
+			ImageView imageView = (ImageView) cell
+					.findViewById(R.id.cell_image);
 			imageView.setImageResource(randomname);
-		} 
-
-		
-
-		if (cellInfo instanceof GroupCellInfo){
-			ImageView imageView = (ImageView) cell.findViewById(R.id.cell_image);
-			imageView.setImageResource(cellInfo.getThumbnailResId());
 		}
 
+		if (cellInfo instanceof GroupCellInfo) {
+			ImageView imageView = (ImageView) cell
+					.findViewById(R.id.cell_image);
+			imageView.setImageResource(cellInfo.getThumbnailResId());
+		}
 
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
@@ -141,8 +139,5 @@ public class CellAdapter extends BaseAdapter {
 		return cell;
 
 	}
-	
 
 }
-
-

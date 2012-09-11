@@ -126,34 +126,35 @@ public class MenuController implements OnItemClickListener {
 		GroupCellInfo groupCellInfo = (GroupCellInfo) v.getTag();
 		ViewPager gridField = (ViewPager) ((Activity) mContext)
 				.findViewById(R.id.grid_field);
-		ContactController contactController = null;
 
 		String groupTitle = groupCellInfo.getDisplayName();
+		((Activity) mContext).getActionBar().setTitle(groupTitle);
+
+		ContactController contactController = null;
+		String selection = null;
 		if (groupTitle.equals("All")) {
-			contactController = new ContactController(mContext, null);
+
 		} else if (groupTitle.equals("Favorite")) {
-			contactController = new ContactController(mContext,
-					ContactsContract.Contacts.STARRED + " = 1");
+			selection = ContactsContract.Contacts.STARRED + " = 1";
+			;
 		} else {
 			int groupId = groupCellInfo.getGroupId();
-
-			contactController = new ContactController(
-					mContext,
-					ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-							+ " = " + groupId);
+			selection = ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+					+ " = " + groupId;
 
 		}
+		contactController = new ContactController(mContext, selection);
 
-		Log.d(TAG, "current group: " + MainActivity.getCurrentGroupTitle()
+		Log.d(TAG, "current group: " + MainActivity.getCurrentGroupSelection()
 				+ " current item : " + MainActivity.getGridFieldCurrentItem());
 
 		int currentItem = 0;
-		if (!groupTitle.equals(MainActivity.getCurrentGroupTitle())) {
+		if (!groupTitle.equals(MainActivity.getCurrentGroupSelection())) {
 			MainActivity.saveGridFieldCurrentItem();
-			MainActivity.setCurrentGroupTitle(groupTitle);
-			currentItem = MainActivity.getGridFieldCurrentItem(groupTitle);
+			MainActivity.setCurrentGroupSelection(selection);
+			currentItem = MainActivity.getGridFieldCurrentItem(selection);
 
-			Log.d(TAG, "clicked group: " + groupTitle + " current item: "
+			Log.d(TAG, "clicked group: " + selection + " current item: "
 					+ currentItem);
 		}
 

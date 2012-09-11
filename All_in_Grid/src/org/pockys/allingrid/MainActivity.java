@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.v4.view.ViewPager; 
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +22,8 @@ public class MainActivity extends Activity {
 	private ViewPager menuField;
 
 	private static Hashtable<String, Integer> gridFieldcurrentItemByGroup = new Hashtable<String, Integer>();
-	private static String currentGroupTitle = "All";
+	private static String currentGroupSelection = null;
+	private static int gridFieldCurrentItem = 0;
 	private int menuFieldCurrentItem = 0;
 
 	private MenuController menuController;
@@ -41,7 +42,7 @@ public class MainActivity extends Activity {
 		super.onResume();
 
 		menuController = new MenuController(this);
-		contactController = new ContactController(this);
+		contactController = new ContactController(this, currentGroupSelection);
 
 		gridField = (ViewPager) findViewById(R.id.grid_field);
 		gridField.setAdapter(new CellPagerAdapter(contactController
@@ -64,8 +65,9 @@ public class MainActivity extends Activity {
 		saveGridFieldCurrentItem();
 		menuFieldCurrentItem = menuField.getCurrentItem();
 
-		Log.d(TAG,
-				"onPause: gridField currentItem: " + gridField.getCurrentItem());
+		Log.d(TAG, "onPause: gridField currentGroup: "
+				+ getCurrentGroupSelection() + " gridField currentItem: "
+				+ gridField.getCurrentItem());
 
 	}
 
@@ -113,36 +115,42 @@ public class MainActivity extends Activity {
 		// with jam obviously
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
-	
+
 	public static void saveGridFieldCurrentItem() {
 		setGridFieldCurrentItem(gridField.getCurrentItem());
 	}
 
-	public static void setGridFieldCurrentItem(String groupTitle,
+	public static void setGridFieldCurrentItem(String groupSelection,
 			int currentItem) {
-		gridFieldcurrentItemByGroup.put(groupTitle, currentItem);
+		if (groupSelection == null)
+			gridFieldCurrentItem = currentItem;
+		else
+			gridFieldcurrentItemByGroup.put(groupSelection, currentItem);
 	}
 
 	public static void setGridFieldCurrentItem(int currentItem) {
-		setGridFieldCurrentItem(getCurrentGroupTitle(), currentItem);
+		setGridFieldCurrentItem(getCurrentGroupSelection(), currentItem);
 	}
 
-	public static int getGridFieldCurrentItem(String groupTitle) {
-		if (gridFieldcurrentItemByGroup.get(groupTitle) == null)
+	public static int getGridFieldCurrentItem(String groupSelection) {
+		if (groupSelection == null)
+			return gridFieldCurrentItem;
+		else if (gridFieldcurrentItemByGroup.get(groupSelection) == null)
 			return 0;
 		else
-			return gridFieldcurrentItemByGroup.get(groupTitle);
+			return gridFieldcurrentItemByGroup.get(groupSelection);
 	}
 
 	public static int getGridFieldCurrentItem() {
-		return getGridFieldCurrentItem(getCurrentGroupTitle());
+		return getGridFieldCurrentItem(getCurrentGroupSelection());
 	}
 
-	public static String getCurrentGroupTitle() {
-		return currentGroupTitle;
+	public static String getCurrentGroupSelection() {
+		return currentGroupSelection;
 	}
 
-	public static void setCurrentGroupTitle(String _currentGroupTitle) {
-		currentGroupTitle = _currentGroupTitle;
+	public static void setCurrentGroupSelection(String currentGroupSelection) {
+		MainActivity.currentGroupSelection = currentGroupSelection;
 	}
+
 }
