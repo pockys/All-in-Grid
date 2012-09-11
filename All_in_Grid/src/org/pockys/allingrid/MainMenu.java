@@ -3,57 +3,41 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
+import android.database.Cursor;
 import android.provider.ContactsContract;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.GridView;
-import android.widget.TextView;
 
 public class MainMenu implements OnItemClickListener {
 
 	private static final String TAG = "MainMenu";
 
-	private ArrayList<CellInfo> mMenuList = new ArrayList<CellInfo>();
-	private Iterator<CellInfo> it;
+	// private ArrayList<CellInfo> mMenuList = new ArrayList<CellInfo>();
 	private Context mContext;
+	private Cursor mGroupTitleCursor;
 
 	public int getSize() {
-		return mMenuList.size();
+		return mGroupTitleCursor.getCount();
 	}
 
 	public MainMenu(Context context) {
 		mContext = context;
 
-		CellInfo sortCell = new CellInfo();
-		sortCell.setDisplayName("Sort");
-		mMenuList.add(sortCell);
+		mGroupTitleCursor = getGroupTitles();
+	}
 
-		CellInfo editCell = new CellInfo();
-		editCell.setDisplayName("Edit");
-		mMenuList.add(editCell);
+	private Cursor getGroupTitles() {
+		final String[] GROUP_PROJECTION = new String[] {
+				ContactsContract.Groups._ID, ContactsContract.Groups.TITLE };
 
-		CellInfo addCell = new CellInfo();
-		addCell.setDisplayName("Add");
-		mMenuList.add(addCell);
+		Cursor cursor = mContext.getContentResolver().query(
+				ContactsContract.Groups.CONTENT_URI, GROUP_PROJECTION, null,
+				null, ContactsContract.Groups.TITLE + " ASC");
 
-		CellInfo sizeCell = new CellInfo();
-		sizeCell.setDisplayName("Size");
-		mMenuList.add(sizeCell);
-
-		CellInfo searchCell = new CellInfo();
-		searchCell.setDisplayName("Search");
-		mMenuList.add(searchCell);
-
-		CellInfo testCell = new CellInfo();
-		testCell.setDisplayName("Test");
-		mMenuList.add(testCell);
-
-		it = mMenuList.iterator();
+		return cursor;
 
 	}
 
@@ -61,38 +45,31 @@ public class MainMenu implements OnItemClickListener {
 
 		ArrayList<CellInfo> menuList = new ArrayList<CellInfo>();
 
-		maxSize = Math.min(maxSize, mMenuList.size());
-		for (int i = 0; i < maxSize && it.hasNext(); i++)
-			menuList.add(it.next());
+		for (int i = 0; mGroupTitleCursor.moveToNext() && i < maxSize; i++) {
 
+			String displayName = mGroupTitleCursor.getString(mGroupTitleCursor
+					.getColumnIndex(ContactsContract.Groups.TITLE));
+			String groupIdString = mGroupTitleCursor
+					.getString(mGroupTitleCursor
+							.getColumnIndex(ContactsContract.Groups._ID));
+
+			Log.d(TAG, "getMenuList. displayName: " + displayName);
+
+			GroupCellInfo group = new GroupCellInfo();
+			group.setDisplayName(displayName);
+			group.setThumbnail(R.drawable.ic_user_group);
+			group.setGroupId(Integer.valueOf(groupIdString));
+			menuList.add(group);
+		}
+
+		for (Iterator<CellInfo> it = menuList.iterator(); it.hasNext();) {
+			Log.d(TAG, "menuList: " + it.next().getDisplayName());
+		}
 		return menuList;
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-		TextView textView = (TextView) v.findViewById(R.id.cell_label);
-		String displayName = textView.getText().toString();
-
-		if (displayName == "Add") {
-			Intent intent = new Intent(Intent.ACTION_INSERT);
-			intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-			mContext.startActivity(intent);
-		} else if (displayName == "Test") {
-			LayoutInflater inflater = LayoutInflater.from(mContext);
-			GridView gridView = (GridView) inflater.inflate(R.layout.grid_view,
-					null);
-			gridView.setAdapter(new CellAdapter(mContext, new Contact(mContext)
-					.getContactsList(16)));
-			gridView.setNumColumns(4);
-			// gridView.setOnItemClickListener(new MainActivity());
-
-			AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-			builder.setView(gridView).setTitle("Directory Name")
-					.setInverseBackgroundForced(true);
-
-			AlertDialog dialog = builder.create();
-			dialog.show();
-		}
 
 	}
 

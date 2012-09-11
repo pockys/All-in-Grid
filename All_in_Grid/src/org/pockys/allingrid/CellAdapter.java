@@ -63,13 +63,16 @@ public class CellAdapter extends BaseAdapter {
 		if (!cellInfo.isThereNoThumbnail())
 			imageView.setImageURI(cellInfo.getThumbnailUri());
 
+		if (cellInfo instanceof GroupCellInfo)
+			imageView.setImageResource(cellInfo.getThumbnailResId());
+
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
 		textView.setText(cellInfo.getDisplayName());
 
-//		if (cellInfo instanceof ContactCellInfo)
-//			cell.setTag(((ContactCellInfo) cellInfo).getContactId());
-		
+		// if (cellInfo instanceof ContactCellInfo)
+		// cell.setTag(((ContactCellInfo) cellInfo).getContactId());
+
 		cell.setTag(cellInfo);
 
 		return cell;

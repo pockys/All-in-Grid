@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -24,16 +25,17 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 	static final String TAG = "MainActivity";
 	private ViewPager gridField;
-	// private ViewPager menuField;
+	private ViewPager menuField;
 	private int gridFieldCurrentItem = 0;
 
-	// private int menuFieldCurrentItem = 0;
+	private int menuFieldCurrentItem = 0;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
 		ActionBar actionBar = getActionBar();
+		// actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.show();
 	}
 
@@ -45,9 +47,9 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		gridField.setAdapter(new CellPagerAdapter(getGridFieldViews(4, 4)));
 		gridField.setCurrentItem(gridFieldCurrentItem);
 
-		// menuField = (ViewPager) findViewById(R.id.menu_field);
-		// menuField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
-		// menuField.setCurrentItem(menuFieldCurrentItem);
+		menuField = (ViewPager) findViewById(R.id.menu_field);
+		menuField.setAdapter(new CellPagerAdapter(getMenuFieldViews(4)));
+		menuField.setCurrentItem(menuFieldCurrentItem);
 
 	}
 
@@ -86,6 +88,8 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		final int numCells = numColumns;
 
 		MainMenu mainMenu = new MainMenu(this);
+		Log.d(TAG, "getMenuFieldVIews. numCells: " + numCells
+				+ "mainMenu size: " + mainMenu.getSize());
 
 		for (int i = 0; i < mainMenu.getSize() / numCells; i++) {
 			GridView menuView = (GridView) LayoutInflater.from(this).inflate(
@@ -116,22 +120,28 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// same as using a normal menu
+		makeToast(item.getTitle().toString());
+
+		Intent intent;
 		switch (item.getItemId()) {
 		case R.id.menu_phone:
-			makeToast("Phone");
+			intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
+			startActivity(intent);
 			break;
 		case R.id.menu_sort:
-			makeToast("Sort");
+
 			break;
 		case R.id.menu_search:
-			makeToast("Search");
+
 			break;
 		case R.id.menu_edit:
-			makeToast("Edit");
+
 			break;
 		case R.id.menu_add:
-			makeToast("Add");
+			// makeToast("Add");
+			intent = new Intent(Intent.ACTION_INSERT);
+			intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+			this.startActivity(intent);
 			break;
 		}
 
@@ -168,7 +178,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		gridFieldCurrentItem = gridField.getCurrentItem();
 		Log.d(TAG, "onPause: gridFieldCurrentItem: " + gridFieldCurrentItem);
 
-		// menuFieldCurrentItem = menuField.getCurrentItem();
+		menuFieldCurrentItem = menuField.getCurrentItem();
 
 	}
 }

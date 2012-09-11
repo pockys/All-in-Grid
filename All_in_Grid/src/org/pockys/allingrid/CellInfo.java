@@ -36,6 +36,10 @@ public class CellInfo {
 	public void setThumbnail(int resId) {
 		mResId = resId;
 	}
+	
+	public int getThumbnailResId() {
+		return mResId;
+	}
 
 	public boolean isThereNoThumbnail() {
 		return mThumbnailUri == null && mThumbnailBitmap == null

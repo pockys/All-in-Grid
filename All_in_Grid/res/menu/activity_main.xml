@@ -3,7 +3,7 @@
     <item
         android:id="@+id/menu_phone"
         android:icon="@drawable/ic_menu_phone"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always"
         android:title="@string/menu_phone"/>
     <item
         android:id="@+id/menu_sort"
@@ -12,8 +12,9 @@
         android:title="@string/menu_sort"/>
     <item
         android:id="@+id/menu_search"
+        android:actionViewClass="android.widget.SearchView"
         android:icon="@drawable/ic_menu_search"
-        android:showAsAction="ifRoom|withText"
+        android:showAsAction="always|collapseActionView"
         android:title="@string/menu_search"/>
     <item
         android:id="@+id/menu_edit"
