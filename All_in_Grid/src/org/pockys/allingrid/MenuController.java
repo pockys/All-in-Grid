@@ -37,17 +37,37 @@ public class MenuController implements OnItemClickListener {
 				ContactsContract.Groups._ID, ContactsContract.Groups.TITLE,
 				ContactsContract.Groups.SUMMARY_COUNT };
 
+		String selection = ContactsContract.Groups.SUMMARY_COUNT + " > 0 AND "
+				+ ContactsContract.Groups.TITLE
+				+ " NOT LIKE 'Starred in Android'";
+
 		Cursor cursor = mContext.getContentResolver().query(
 				ContactsContract.Groups.CONTENT_SUMMARY_URI, GROUP_PROJECTION,
-				null, null, ContactsContract.Groups.TITLE + " ASC");
+				selection, null, ContactsContract.Groups.TITLE + " ASC");
 
 		return cursor;
 
 	}
 
+	private int menuListCount = 0;
+
 	private ArrayList<CellInfo> getMenuList(int maxSize) {
 
 		ArrayList<CellInfo> menuList = new ArrayList<CellInfo>();
+
+		if (menuListCount++ == 0) {
+			GroupCellInfo group = new GroupCellInfo();
+			group.setDisplayName("All");
+			group.setThumbnail(R.drawable.ic_all);
+			menuList.add(group);
+
+			group = new GroupCellInfo();
+			group.setDisplayName("Favorite");
+			group.setThumbnail(R.drawable.ic_favorite);
+			menuList.add(group);
+
+			maxSize -= 2;
+		}
 
 		for (int i = 0; mGroupTitleCursor.moveToNext() && i < maxSize; i++) {
 
@@ -56,13 +76,9 @@ public class MenuController implements OnItemClickListener {
 			String groupIdString = mGroupTitleCursor
 					.getString(mGroupTitleCursor
 							.getColumnIndex(ContactsContract.Groups._ID));
-			String summaryCountString = mGroupTitleCursor
-					.getString(mGroupTitleCursor
-							.getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
-
-			Log.d(TAG, "getMenuList. displayName: " + displayName
-					+ " group id: " + groupIdString + " summary count: "
-					+ summaryCountString);
+			// String summaryCountString = mGroupTitleCursor
+			// .getString(mGroupTitleCursor
+			// .getColumnIndex(ContactsContract.Groups.SUMMARY_COUNT));
 
 			GroupCellInfo group = new GroupCellInfo();
 			group.setDisplayName(displayName);
@@ -106,19 +122,30 @@ public class MenuController implements OnItemClickListener {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 		GroupCellInfo groupCellInfo = (GroupCellInfo) v.getTag();
-		MainActivity.makeToast(mContext, groupCellInfo.getDisplayName());
+		// MainActivity.makeToast(mContext, groupCellInfo.getDisplayName());
 
-//		String groupTitle = groupCellInfo.getDisplayName();
-		int groupId = groupCellInfo.getGroupId();
+		ViewPager gridField = (ViewPager) ((Activity) mContext)
+				.findViewById(R.id.grid_field);
+		ContactController contactController = null;
 
-//		ViewPager gridField = (ViewPager) ((Activity) mContext)
-//				.findViewById(R.id.grid_field);
-//		ContactController contactController = new ContactController(mContext,
-//				ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-//						+ " = " + groupId);
-//		gridField.setAdapter(new CellPagerAdapter(contactController
-//				.getGridFieldViews(4, 4)));
+		String groupTitle = groupCellInfo.getDisplayName();
+		if (groupTitle.equals("All")) {
+			contactController = new ContactController(mContext, null);
+		} else if (groupTitle.equals("Favorite")) {
+			contactController = new ContactController(mContext,
+					ContactsContract.Contacts.STARRED + " = 1");
+		} else {
+			int groupId = groupCellInfo.getGroupId();
 
+			contactController = new ContactController(
+					mContext,
+					ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+							+ " = " + groupId);
+
+		}
+
+		gridField.setAdapter(new CellPagerAdapter(contactController
+				.getGridFieldViews(4, 4)));
 	}
 
 }

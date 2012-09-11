@@ -11,14 +11,9 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.QuickContactBadge;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
-public class MainActivity extends Activity implements OnItemClickListener {
+public class MainActivity extends Activity {
 
 	static final String TAG = "MainActivity";
 	private ViewPager gridField;
@@ -46,7 +41,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 
 		gridField = (ViewPager) findViewById(R.id.grid_field);
 		gridField.setAdapter(new CellPagerAdapter(contactController
-				.getGridFieldViews(4, 4, this)));
+				.getGridFieldViews(4, 4)));
 		gridField.setCurrentItem(gridFieldCurrentItem);
 
 		menuField = (ViewPager) findViewById(R.id.menu_field);
@@ -80,7 +75,7 @@ public class MainActivity extends Activity implements OnItemClickListener {
 			intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
 			startActivity(intent);
 			break;
-		case R.id.menu_sort:
+		case R.id.menu_icon:
 
 			break;
 		case R.id.menu_search:
@@ -89,10 +84,15 @@ public class MainActivity extends Activity implements OnItemClickListener {
 		case R.id.menu_edit:
 
 			break;
-		case R.id.menu_add:
+		case R.id.menu_add_user:
 			// makeToast("Add");
 			intent = new Intent(Intent.ACTION_INSERT);
 			intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
+			this.startActivity(intent);
+			break;
+		case R.id.menu_add_group:
+			intent = new Intent(Intent.ACTION_INSERT);
+			intent.setType(ContactsContract.Groups.CONTENT_ITEM_TYPE);
 			this.startActivity(intent);
 			break;
 		}
@@ -103,25 +103,6 @@ public class MainActivity extends Activity implements OnItemClickListener {
 	public static void makeToast(Context context, String message) {
 		// with jam obviously
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> parent, final View v, int position,
-			long id) {
-		// get contact uri from contact id
-		ContactCellInfo contactCellInfo = (ContactCellInfo) v.getTag();
-		String contactIdString = String.valueOf(contactCellInfo.getContactId());
-		final Uri contactUri = Uri.withAppendedPath(
-				ContactsContract.Data.CONTENT_URI, Uri.encode(contactIdString));
-		makeToast(this, "contact id: " + contactIdString);
-
-		final QuickContactBadge badge = new QuickContactBadge(this);
-		badge.assignContactUri(contactUri);
-		badge.setMode(ContactsContract.QuickContact.MODE_LARGE);
-		((ViewGroup) v).addView(badge);
-		badge.performClick();
-		((ViewGroup) v).removeView(badge);
-
 	}
 
 }

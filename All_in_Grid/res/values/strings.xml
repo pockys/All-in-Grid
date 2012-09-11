@@ -6,9 +6,11 @@
     <string name="title_contacts">All in Grid</string>
     <string name="menu_sort">SORT</string>
     <string name="menu_edit">EDIT</string>
-    <string name="menu_add">ADD</string>
+    <string name="menu_add_user">ADD USER</string>
+    <string name="menu_add_group">ADD GROUP</string>
     <string name="menu_size">SIZE</string>
     <string name="menu_phone">PHONE</string>
-    <string name="menu_search">SEARCH</string>
+    <string name="menu_search">SEARCH</string> 
+    <string name="menu_icon">ICON</string>
 
 </resources>

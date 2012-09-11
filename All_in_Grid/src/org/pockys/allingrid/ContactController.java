@@ -7,10 +7,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.QuickContactBadge;
 
-public class ContactController {
+public class ContactController implements OnItemClickListener {
 
 	private Context mContext;
 	private Cursor mContactsCursor;
@@ -31,7 +35,7 @@ public class ContactController {
 	private ArrayList<CellInfo> getContactsList(int maxSize) {
 
 		ArrayList<CellInfo> contactsArrayList = new ArrayList<CellInfo>();
-
+		
 		for (int i = 0; mContactsCursor.moveToNext() && i < maxSize; i++) {
 
 			String displayName = mContactsCursor.getString(mContactsCursor
@@ -72,7 +76,7 @@ public class ContactController {
 	}
 
 	public ArrayList<GridView> getGridFieldViews(final int numColumns,
-			final int numRows, OnItemClickListener itemClickListener) {
+			final int numRows) {
 		ArrayList<GridView> gridViewList = new ArrayList<GridView>();
 
 		// Contact contact = new Contact(this);
@@ -83,7 +87,7 @@ public class ContactController {
 			gridView.setNumColumns(numColumns);
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
-			gridView.setOnItemClickListener(itemClickListener);
+			gridView.setOnItemClickListener(this);
 
 			gridViewList.add(gridView);
 		}
@@ -93,12 +97,31 @@ public class ContactController {
 			gridView.setNumColumns(numColumns);
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
-			gridView.setOnItemClickListener(itemClickListener);
+			gridView.setOnItemClickListener(this);
 
 			gridViewList.add(gridView);
 		}
 
 		return gridViewList;
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, final View v, int position,
+			long id) {
+		// get contact uri from contact id
+		ContactCellInfo contactCellInfo = (ContactCellInfo) v.getTag();
+		String contactIdString = String.valueOf(contactCellInfo.getContactId());
+		final Uri contactUri = Uri.withAppendedPath(
+				ContactsContract.Contacts.CONTENT_URI,
+				Uri.encode(contactIdString));
+
+		final QuickContactBadge badge = new QuickContactBadge(mContext);
+		badge.assignContactUri(contactUri);
+		badge.setMode(ContactsContract.QuickContact.MODE_LARGE);
+		((ViewGroup) v).addView(badge);
+		badge.performClick();
+		((ViewGroup) v).removeView(badge);
+
 	}
 
 }

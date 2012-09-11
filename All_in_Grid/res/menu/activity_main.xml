@@ -6,10 +6,10 @@
         android:showAsAction="always"
         android:title="@string/menu_phone"/>
     <item
-        android:id="@+id/menu_sort"
+        android:id="@+id/menu_icon"
         android:icon="@drawable/ic_menu_sort"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_sort"/>
+        android:title="@string/menu_icon"/>
     <item
         android:id="@+id/menu_search"
         android:actionViewClass="android.widget.SearchView"
@@ -22,9 +22,14 @@
         android:showAsAction="ifRoom|withText"
         android:title="@string/menu_edit"/>
     <item
-        android:id="@+id/menu_add"
-        android:icon="@drawable/ic_menu_user_add"
+        android:id="@+id/menu_add_user"
+        android:icon="@drawable/ic_menu_add_user"
         android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_add"/>
+        android:title="@string/menu_add_user"/>
+    <item
+        android:id="@+id/menu_add_group"
+        android:icon="@drawable/ic_menu_add_group"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/menu_add_group"/>
 
 </menu>
