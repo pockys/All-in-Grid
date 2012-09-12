@@ -12,7 +12,6 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
 public class CellAdapter extends BaseAdapter {
 
 	static final String TAG = "ContactAdapter";

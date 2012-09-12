@@ -23,23 +23,7 @@ public class CellPagerAdapter extends PagerAdapter {
 
 	public CellPagerAdapter(ArrayList<GridView> pagedViews) {
 		super();
-		// mContext = context;
-		// mContactsCursor = getContacts();
-		// mNumRows = numRows;
-		// mNumColumns = numColums;
-		// mNumCells = mNumRows * mNumColumns;
 		mPagedViews = pagedViews;
-
-		/*
-		 * for (int i = 0; i < mContactsCursor.getCount() / mNumCells; i++) {
-		 * GridView gridView = (GridView) LayoutInflater.from(mContext)
-		 * .inflate(R.layout.grid_view, null);
-		 * gridView.setNumColumns(mNumColumns); gridView.setAdapter(new
-		 * ContactAdapter(mContext, getContactsList()));
-		 * 
-		 * mPagedViews.add(gridView); }
-		 */
-
 	}
 
 	@Override
@@ -57,7 +41,8 @@ public class CellPagerAdapter extends PagerAdapter {
 
 	@Override
 	public void destroyItem(View arg0, int arg1, Object arg2) {
-		((ViewPager) arg0).removeView((View) arg2);
+		ViewPager viewPager = ((ViewPager) arg0);
+		viewPager.removeView((View) arg2);
 
 	}
 

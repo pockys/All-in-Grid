@@ -3,6 +3,8 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import com.viewpagerindicator.CirclePageIndicator;
+
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
@@ -149,7 +151,11 @@ public class MenuController implements OnItemClickListener {
 				+ " current item : " + MainActivity.getGridFieldCurrentItem());
 
 		int currentItem = 0;
-		if (!groupTitle.equals(MainActivity.getCurrentGroupSelection())) {
+		if (selection == null
+				&& MainActivity.getCurrentGroupSelection() == null) {
+
+		} else if (selection == null
+				|| !selection.equals(MainActivity.getCurrentGroupSelection())) {
 			MainActivity.saveGridFieldCurrentItem();
 			MainActivity.setCurrentGroupSelection(selection);
 			currentItem = MainActivity.getGridFieldCurrentItem(selection);
@@ -161,6 +167,10 @@ public class MenuController implements OnItemClickListener {
 		gridField.setAdapter(new CellPagerAdapter(contactController
 				.getGridFieldViews(4, 4)));
 		gridField.setCurrentItem(currentItem);
+		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) ((Activity) mContext)
+				.findViewById(R.id.circle_page_indicator_grid);
+		circlePageIndicator.setViewPager(gridField);
+		circlePageIndicator.setCurrentItem(currentItem);
 
 	}
 

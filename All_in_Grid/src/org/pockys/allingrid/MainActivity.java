@@ -15,6 +15,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.viewpagerindicator.CirclePageIndicator;
+import com.viewpagerindicator.LinePageIndicator;
+
 public class MainActivity extends Activity {
 
 	static final String TAG = "MainActivity";
@@ -49,10 +52,18 @@ public class MainActivity extends Activity {
 				.getGridFieldViews(4, 4)));
 		gridField.setCurrentItem(getGridFieldCurrentItem());
 
+		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+		circlePageIndicator.setViewPager(gridField);
+		circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+
 		menuField = (ViewPager) findViewById(R.id.menu_field);
 		menuField.setAdapter(new CellPagerAdapter(menuController
 				.getMenuFieldViews(4)));
 		menuField.setCurrentItem(menuFieldCurrentItem);
+
+		LinePageIndicator linePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
+		linePageIndicator.setViewPager(menuField);
+		linePageIndicator.setCurrentItem(menuFieldCurrentItem);
 
 		Log.d(TAG, "onResume: gridField currentItem: "
 				+ getGridFieldCurrentItem());

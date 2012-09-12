@@ -1,23 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    xmlns:app="http://schemas.android.com/apk/res/org.pockys.allingrid"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <com.viewpagerindicator.LinePageIndicator
+        android:id="@+id/line_page_indicator_menu"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="2dp"
+        android:paddingBottom="3dp"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
+        android:paddingTop="5dp" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/menu_field"
         android:layout_width="fill_parent"
-        android:layout_height="78dp"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="10dp"
-        android:layout_marginTop="10dp" />
+        android:layout_height="76dp"
+        android:layout_above="@id/line_page_indicator_menu" />
+
+    <com.viewpagerindicator.CirclePageIndicator
+        android:id="@+id/circle_page_indicator_grid"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/menu_field"
+        android:layout_marginBottom="6dp"
+        android:padding="3dp"
+        app:fillColor="#00BFFF" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/grid_field"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_above="@id/menu_field"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/circle_page_indicator_grid"
         android:layout_alignParentTop="true"
-        android:padding="10dp" />
+        android:padding="5dp" />
 
 </RelativeLayout>
