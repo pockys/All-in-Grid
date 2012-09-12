@@ -11,15 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.QuickContactBadge;
 
-public class ContactController implements OnItemClickListener,
-		OnItemLongClickListener {
+public class ContactController implements OnItemClickListener {
 
-	private Context mContext; 
+	private Context mContext;
 	private Cursor mContactsCursor;
+	private OnItemClickListener mOnItemClickListener = this;
 
 	public ContactController(Context context) {
 		this(context, null);
@@ -89,7 +88,7 @@ public class ContactController implements OnItemClickListener,
 			gridView.setNumColumns(numColumns);
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
-			gridView.setOnItemClickListener(this);
+			gridView.setOnItemClickListener(mOnItemClickListener);
 
 			gridViewList.add(gridView);
 		}
@@ -99,7 +98,7 @@ public class ContactController implements OnItemClickListener,
 			gridView.setNumColumns(numColumns);
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
-			gridView.setOnItemClickListener(this);
+			gridView.setOnItemClickListener(mOnItemClickListener);
 
 			gridViewList.add(gridView);
 		}
@@ -126,11 +125,12 @@ public class ContactController implements OnItemClickListener,
 
 	}
 
-	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
-			long arg3) {
+	public OnItemClickListener getOnItemClickListener() {
+		return mOnItemClickListener;
+	}
 
-		return false;
+	public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+		this.mOnItemClickListener = mOnItemClickListener;
 	}
 
 }

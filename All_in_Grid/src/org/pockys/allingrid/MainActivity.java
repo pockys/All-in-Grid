@@ -4,11 +4,14 @@ import java.util.Hashtable;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +40,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.main);
 
 		ActionBar actionBar = getActionBar();
+		// actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.show();
 
 	}
@@ -65,7 +69,8 @@ public class MainActivity extends Activity {
 		linePageIndicator.setViewPager(menuField);
 		linePageIndicator.setCurrentItem(menuFieldCurrentItem);
 
-		Log.d(TAG, "onResume: gridField currentItem: "
+		Log.d(TAG, "onResume: gridField currentGroup: "
+				+ getCurrentGroupSelection() + " currentItem: "
 				+ getGridFieldCurrentItem());
 
 	}
@@ -79,6 +84,47 @@ public class MainActivity extends Activity {
 		Log.d(TAG, "onPause: gridField currentGroup: "
 				+ getCurrentGroupSelection() + " gridField currentItem: "
 				+ gridField.getCurrentItem());
+
+	}
+
+	@Override
+	public void onBackPressed() {
+		Log.d(TAG,
+				"onBackPressed Called. gridField currentItem: "
+						+ gridField.getCurrentItem());
+
+		final String groupSelection = getCurrentGroupSelection();
+
+		if (groupSelection == null && gridField.getCurrentItem() == 0) {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Do you want to quit?");
+			builder.setPositiveButton("Yes", new OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					finish();
+				}
+			});
+			builder.setNegativeButton("No", null);
+			builder.create().show();
+
+		} else if (groupSelection != null && gridField.getCurrentItem() == 0) {
+			setCurrentGroupSelection(null);
+
+			contactController = new ContactController(this, null);
+			gridField = (ViewPager) findViewById(R.id.grid_field);
+			gridField.setAdapter(new CellPagerAdapter(contactController
+					.getGridFieldViews(4, 4)));
+			gridField.setCurrentItem(getGridFieldCurrentItem());
+
+			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+			circlePageIndicator.setViewPager(gridField);
+			circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+			getActionBar().setTitle("All");
+		} else {
+			setGridFieldCurrentItem(0);
+			gridField.setCurrentItem(0);
+		}
 
 	}
 
@@ -97,25 +143,25 @@ public class MainActivity extends Activity {
 			intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
 			startActivity(intent);
 			break;
-		case R.id.menu_icon:
-
-			break;
-		case R.id.menu_search:
-
-			break;
+//		case R.id.menu_icon:
+//
+//			break;
+//		case R.id.menu_search:
+//
+//			break;
 		case R.id.menu_edit:
+			intent = new Intent(this, EditActivity.class);
+			startActivity(intent);
+			break;
+		case R.id.menu_add:
+			intent = new Intent(Intent.ACTION_INSERT);
 
-			break;
-		case R.id.menu_add_user:
-			// makeToast("Add");
-			intent = new Intent(Intent.ACTION_INSERT);
-			intent.setType(ContactsContract.Contacts.CONTENT_TYPE);
-			this.startActivity(intent);
-			break;
-		case R.id.menu_add_group:
-			intent = new Intent(Intent.ACTION_INSERT);
-			intent.setType(ContactsContract.Groups.CONTENT_ITEM_TYPE);
-			this.startActivity(intent);
+			String packageName = "com.android.contacts";
+			String className = ".activities.PeopleActivity";
+			intent.setComponent(new ComponentName(packageName, packageName
+					+ className));
+			startActivity(intent);
+
 			break;
 		}
 

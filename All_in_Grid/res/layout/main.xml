@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="2dp"
-        android:paddingBottom="3dp"
+        android:paddingBottom="2dp"
         android:paddingLeft="3dp"
         android:paddingRight="3dp"
         android:paddingTop="5dp" />
@@ -18,7 +18,7 @@
     <android.support.v4.view.ViewPager
         android:id="@+id/menu_field"
         android:layout_width="fill_parent"
-        android:layout_height="76dp"
+        android:layout_height="78dp"
         android:layout_above="@id/line_page_indicator_menu" />
 
     <com.viewpagerindicator.CirclePageIndicator
@@ -26,7 +26,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/menu_field"
-        android:layout_marginBottom="6dp"
+        android:layout_marginBottom="5dp"
         android:padding="3dp"
         app:fillColor="#00BFFF" />
 

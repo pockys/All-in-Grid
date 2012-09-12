@@ -2,9 +2,9 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,7 @@ public class CellAdapter extends BaseAdapter {
 
 	static final String TAG = "ContactAdapter";
 
-	private Context context;
+	private Context mContext;
 	private LayoutInflater layoutInflater;
 
 	SharedPreferences sharedPreferences;
@@ -24,11 +24,6 @@ public class CellAdapter extends BaseAdapter {
 	ArrayList<Integer> iconList = new ArrayList<Integer>();
 
 	private ArrayList<CellInfo> mCellInfoList;
-
-	static class Contact {
-		String displayName;
-		Uri thumbnailUri;
-	}
 
 	public CellAdapter(Context _context, ArrayList<CellInfo> cellInfoList) {
 		super();
@@ -61,8 +56,8 @@ public class CellAdapter extends BaseAdapter {
 		iconList.add(R.drawable.ic_tizukigou_008);
 		int iconListSize = iconList.size();
 
-		context = _context;
-		layoutInflater = LayoutInflater.from(context);
+		mContext = _context;
+		layoutInflater = LayoutInflater.from(mContext);
 		mCellInfoList = cellInfoList;
 	}
 
@@ -85,9 +80,6 @@ public class CellAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		int randsize = iconList.size();
-		// int rand;
-		// rand = ((int) Math.round (Math.random () * randsize + 0.5))-1;
 
 		View cell = convertView;
 		if (convertView == null)
@@ -95,14 +87,8 @@ public class CellAdapter extends BaseAdapter {
 
 		CellInfo cellInfo = mCellInfoList.get(position);
 
-		//
-		// rand = (int)(Math.random() * iconList.size());
-		// int randname =iconList.get(rand);
 		if (cellInfo instanceof ContactCellInfo) {
-			// //ImageView imageView = (ImageView)
-			// cell.findViewById(R.id.cell_image);/*
-			// imageView.setImageResource(randname );
-			// }*/
+
 			int contactId = ((ContactCellInfo) cellInfo).getContactId();
 
 			int rand = sharedPreferences.getInt(Integer.toString(contactId), 0);
@@ -117,12 +103,25 @@ public class CellAdapter extends BaseAdapter {
 			int randomname = iconList.get(rand);
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
+			cellInfo.setThumbnail(randomname);
 			imageView.setImageResource(randomname);
+
+			if (((Activity) mContext).getClass().equals(EditActivity.class)
+					&& EditGridItemClickListener.containContactId(contactId)) {
+				// imageView.setAlpha(EditClickListener.ALPHA_VALUE);
+				// imageView
+				// .setBackgroundColor(EditClickListener.BACKGROUND_COLOR);
+
+				// cell.setAlpha(EditClickListener.ALPHA_VALUE);
+				cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
+
+			}
 		}
 
 		if (cellInfo instanceof GroupCellInfo) {
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
+
 			imageView.setImageResource(cellInfo.getThumbnailResId());
 		}
 

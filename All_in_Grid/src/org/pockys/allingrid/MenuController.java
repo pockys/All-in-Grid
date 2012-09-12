@@ -1,9 +1,6 @@
 package org.pockys.allingrid;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-
-import com.viewpagerindicator.CirclePageIndicator;
 
 import android.app.Activity;
 import android.content.Context;
@@ -17,6 +14,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 
+import com.viewpagerindicator.CirclePageIndicator;
+
 public class MenuController implements OnItemClickListener {
 
 	private static final String TAG = "MainMenu";
@@ -24,15 +23,21 @@ public class MenuController implements OnItemClickListener {
 	// private ArrayList<CellInfo> mMenuList = new ArrayList<CellInfo>();
 	private Context mContext;
 	private Cursor mGroupTitleCursor;
+	private OnItemClickListener mOnItemClickListener = this;
 
 	public int getSize() {
 		return mGroupTitleCursor.getCount();
 	}
 
+	public MenuController(Context context,
+			OnItemClickListener onItemClickListener) {
+		this(context);
+		mOnItemClickListener = onItemClickListener;
+	}
+
 	public MenuController(Context context) {
 		mContext = context;
 		mGroupTitleCursor = getGroupTitles();
-
 	}
 
 	private Cursor getGroupTitles() {
@@ -40,8 +45,8 @@ public class MenuController implements OnItemClickListener {
 				ContactsContract.Groups._ID, ContactsContract.Groups.TITLE,
 				ContactsContract.Groups.SUMMARY_COUNT };
 
-		String selection = ContactsContract.Groups.SUMMARY_COUNT + " > 0 AND "
-				+ ContactsContract.Groups.TITLE
+		// ContactsContract.Groups.SUMMARY_COUNT + " > 0 AND " +
+		String selection = ContactsContract.Groups.TITLE
 				+ " NOT LIKE 'Starred in Android'";
 
 		Cursor cursor = mContext.getContentResolver().query(
@@ -89,10 +94,10 @@ public class MenuController implements OnItemClickListener {
 			group.setGroupId(Integer.valueOf(groupIdString));
 			menuList.add(group);
 		}
-
-		for (Iterator<CellInfo> it = menuList.iterator(); it.hasNext();) {
-			Log.d(TAG, "menuList: " + it.next().getDisplayName());
-		}
+		//
+		// for (Iterator<CellInfo> it = menuList.iterator(); it.hasNext();) {
+		// Log.d(TAG, "menuList: " + it.next().getDisplayName());
+		// }
 		return menuList;
 	}
 
@@ -106,7 +111,7 @@ public class MenuController implements OnItemClickListener {
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(mContext, this
 					.getMenuList(numCells)));
-			menuView.setOnItemClickListener(this);
+			menuView.setOnItemClickListener(mOnItemClickListener);
 			menuViewList.add(menuView);
 		}
 		if (this.getSize() % numCells != 0) {
@@ -115,7 +120,7 @@ public class MenuController implements OnItemClickListener {
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(mContext, this
 					.getMenuList(numCells)));
-			menuView.setOnItemClickListener(this);
+			menuView.setOnItemClickListener(mOnItemClickListener);
 			menuViewList.add(menuView);
 		}
 
