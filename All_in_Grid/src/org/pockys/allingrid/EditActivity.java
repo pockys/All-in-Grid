@@ -1,6 +1,7 @@
 package org.pockys.allingrid;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import android.app.ActionBar;
@@ -25,18 +26,20 @@ public class EditActivity extends Activity {
 
 	public static final String TAG = "EditActivity";
 
-	private static ViewPager gridField;
+	private static ViewPager mGridField;
 	private ViewPager menuField;
 
 	private MenuController menuController;
 	private ContactController contactController;
 
-	private static int gridFieldCurrentItem = 0;
-	private int menuFieldCurrentItem = 0;
+	private int menuFieldCurrentItem = -1;
 
 	private EditGridItemClickListener mEditClickListener;
+	private CirclePageIndicator mCirclePageIndicator;
+	private LinePageIndicator mLinePageIndicator;
 
-	private static GroupCellInfo currentGroupInfo = MenuController.AllGroupCellInfo;
+	private static Hashtable<GroupCellInfo, Integer> currentItemTable;
+	private static GroupCellInfo currentGroupInfo;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,6 +48,9 @@ public class EditActivity extends Activity {
 		ActionBar actionBar = getActionBar();
 		actionBar.setTitle("Edit - All");
 		actionBar.setDisplayHomeAsUpEnabled(true);
+
+		currentItemTable = MainActivity.cloneCurrentItemTable();
+		currentGroupInfo = MainActivity.getCurrentGroupInfo();
 
 		mEditClickListener = new EditGridItemClickListener(this);
 	}
@@ -147,56 +153,71 @@ public class EditActivity extends Activity {
 
 	private void resetField() {
 		SelectedItemList.INSTANCE.clear();
-		saveGridFieldCurrentItem();
+		saveCurrentItem();
 
 		contactController = new ContactController(this, null);
 		contactController.setOnItemClickListener(mEditClickListener);
 
-		gridField = (ViewPager) findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(contactController
+		mGridField = (ViewPager) findViewById(R.id.grid_field);
+		mGridField.setAdapter(new CellPagerAdapter(contactController
 				.getGridFieldViews(4, 4)));
-		gridField.setCurrentItem(getGridFieldCurrentItem());
+		mGridField.setCurrentItem(getCurrentItem());
 
 		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-		circlePageIndicator.setViewPager(gridField);
-		circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+		circlePageIndicator.setViewPager(mGridField);
+		circlePageIndicator.setCurrentItem(getCurrentItem());
+	}
+
+	public void onStart() {
+		super.onStart();
+
+		menuController = new MenuController(this, false);
+		menuController.setOnItemClickListener(new EditMenuItemClickListener(
+				this));
+		contactController = new ContactController(this,
+				MainActivity.getSelection(currentGroupInfo));
+		contactController.setOnItemClickListener(mEditClickListener);
+
+		mGridField = (ViewPager) findViewById(R.id.grid_field);
+		mGridField.setAdapter(new CellPagerAdapter(contactController
+				.getGridFieldViews(4, 4)));
+
+		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+		mCirclePageIndicator.setViewPager(mGridField);
+		menuField = (ViewPager) findViewById(R.id.menu_field);
+		menuField.setAdapter(new CellPagerAdapter(menuController
+				.getMenuFieldViews(4)));
+
+		mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
+		mLinePageIndicator.setViewPager(menuField);
+
+		if (menuFieldCurrentItem == -1) {
+			menuFieldCurrentItem = menuController.getPagedCount(4,
+					currentGroupInfo, false);
+		}
+
 	}
 
 	public void onResume() {
 		super.onResume();
 
-		menuController = new MenuController(this, false);
-		menuController.setOnItemClickListener(new EditMenuItemClickListener(
-				this));
-		contactController = new ContactController(this, null);
-		contactController.setOnItemClickListener(mEditClickListener);
+		Log.d(TAG,
+				"onResume: gridField currentGroup: "
+						+ currentGroupInfo.getDisplayName() + " current Item: "
+						+ getCurrentItem());
 
-		gridField = (ViewPager) findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(contactController
-				.getGridFieldViews(4, 4)));
-		gridField.setCurrentItem(getGridFieldCurrentItem());
-
-		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-		circlePageIndicator.setViewPager(gridField);
-		circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
-
-		menuField = (ViewPager) findViewById(R.id.menu_field);
-		menuField.setAdapter(new CellPagerAdapter(menuController
-				.getMenuFieldViews(4)));
+		mGridField.setCurrentItem(getCurrentItem());
+		mCirclePageIndicator.setCurrentItem(getCurrentItem());
 		menuField.setCurrentItem(menuFieldCurrentItem);
+		mLinePageIndicator.setCurrentItem(menuFieldCurrentItem);
 
-		LinePageIndicator linePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
-		linePageIndicator.setViewPager(menuField);
-		linePageIndicator.setCurrentItem(menuFieldCurrentItem);
-
-		Log.d(TAG, "onResume: gridField ");
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 
-		saveGridFieldCurrentItem();
+		saveCurrentItem();
 		menuFieldCurrentItem = menuField.getCurrentItem();
 
 	}
@@ -205,28 +226,28 @@ public class EditActivity extends Activity {
 	public void onBackPressed() {
 		Log.d(TAG,
 				"onBackPressed Called. gridField currentItem: "
-						+ gridField.getCurrentItem());
+						+ mGridField.getCurrentItem());
 
-		if (gridField.getCurrentItem() == 0) {
+		if (mGridField.getCurrentItem() == 0) {
 			super.onBackPressed();
 			SelectedItemList.INSTANCE.clear();
 		} else {
-			gridField.setCurrentItem(0);
+			mGridField.setCurrentItem(0);
 		}
 
 	}
 
-	public static void saveGridFieldCurrentItem() {
-		setGridFieldCurrentItem(gridField.getCurrentItem());
-	}
-
-	public static int getGridFieldCurrentItem() {
-		return gridFieldCurrentItem;
-	}
-
-	public static void setGridFieldCurrentItem(int gridFieldCurrentItem) {
-		EditActivity.gridFieldCurrentItem = gridFieldCurrentItem;
-	}
+	// public static void saveGridFieldCurrentItem() {
+	// setGridFieldCurrentItem(gridField.getCurrentItem());
+	// }
+	//
+	// public static int getGridFieldCurrentItem() {
+	// return gridFieldCurrentItem;
+	// }
+	//
+	// public static void setGridFieldCurrentItem(int gridFieldCurrentItem) {
+	// EditActivity.gridFieldCurrentItem = gridFieldCurrentItem;
+	// }
 
 	public static GroupCellInfo getCurrentGroupInfo() {
 		return currentGroupInfo;
@@ -234,6 +255,40 @@ public class EditActivity extends Activity {
 
 	public static void setCurrentGroupInfo(GroupCellInfo currentGroupInfo) {
 		EditActivity.currentGroupInfo = currentGroupInfo;
+	}
+
+	public static int getCurrentItem() {
+		return getCurrentItem(currentGroupInfo);
+	}
+
+	public static int getCurrentItem(GroupCellInfo groupInfo) {
+		Integer value = currentItemTable.get(groupInfo);
+		return (value == null) ? 0 : value;
+	}
+
+	public static void saveCurrentItem() {
+		setCurrentItem(mGridField.getCurrentItem());
+	}
+
+	public static void setCurrentItem(int currentItem) {
+		setCurrentItem(getCurrentGroupInfo(), currentItem);
+	}
+
+	public static void setCurrentItem(GroupCellInfo groupInfo, int currentItem) {
+		currentItemTable.put(groupInfo, currentItem);
+	}
+
+	public static String getSelection(GroupCellInfo groupInfo) {
+		String groupTitle = groupInfo.getDisplayName();
+
+		if (groupTitle.equals("All")) {
+			return null;
+		} else if (groupTitle.equals("Favorite")) {
+			return ContactsContract.Contacts.STARRED + " = 1";
+		} else {
+			return ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+					+ " = " + groupInfo.getGroupId();
+		}
 	}
 
 }

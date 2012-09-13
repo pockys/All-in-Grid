@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,15 +83,12 @@ public class CellAdapter extends BaseAdapter {
 					.findViewById(R.id.cell_image);
 			imageView.setImageResource(Randname);
 
-			if (((Activity) mContext).getClass().equals(EditActivity.class)
-					&& SelectedItemList.INSTANCE.contain(contactId)) {
-				// imageView.setAlpha(EditClickListener.ALPHA_VALUE);
-				// imageView
-				// .setBackgroundColor(EditClickListener.BACKGROUND_COLOR);
-
-				// cell.setAlpha(EditClickListener.ALPHA_VALUE);
-				cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
-
+			if (((Activity) mContext).getClass().equals(EditActivity.class)) {
+				if (SelectedItemList.INSTANCE.contain(contactId)) {
+					cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
+				} else {
+					cell.setBackgroundColor(Color.TRANSPARENT);
+				}
 			}
 		}
 

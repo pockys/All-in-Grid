@@ -17,6 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
 
 import com.viewpagerindicator.CirclePageIndicator;
 
@@ -50,7 +52,7 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 			actionBar.setTitle("Edit - " + groupTitle);
 			EditActivity.setCurrentGroupInfo(groupCellInfo);
 
-			int gridFieldCurrentItem = EditActivity.getGridFieldCurrentItem();
+			int gridFieldCurrentItem = EditActivity.getCurrentItem();
 			String selection = null;
 			if (groupTitle == "All") {
 
@@ -92,9 +94,8 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 
 				if (groupTitle == "All") {
 					MainActivity.makeToast(mContext, "Clear all selection");
-					// SelectedItemList.INSTANCE.clear();
-
-					resetField();
+					SelectedItemList.INSTANCE.clear();
+					reDraw();
 					return;
 
 				} else if (groupTitle == "Favorite") {
@@ -126,9 +127,8 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 				ContentProviderResult[] results = mContext.getContentResolver()
 						.applyBatch(ContactsContract.AUTHORITY, ops);
 
-				MainActivity.makeToast(mContext,
-						"Insert " + selectedPeopleCount + " people to "
-								+ groupCellInfo.getDisplayName());
+				MainActivity.makeToast(mContext, "Insert " + results.length
+						+ " people to " + groupCellInfo.getDisplayName());
 
 			}
 
@@ -145,12 +145,23 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		}
 	}
 
+	private void reDraw() {
+		ViewPager gridField = (ViewPager) ((Activity) mContext)
+				.findViewById(R.id.grid_field);
+		for (int i = 0; i < gridField.getChildCount(); i++) {
+			GridView currentGridView = (GridView) gridField.getChildAt(i);
+			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
+			adapter.notifyDataSetChanged();
+
+		}
+	}
+
 	private void resetField() {
 
 		SelectedItemList.INSTANCE.clear();
-		EditActivity.saveGridFieldCurrentItem();
+		EditActivity.saveCurrentItem();
 
-		int gridFieldCurrentItem = EditActivity.getGridFieldCurrentItem();
+		int gridFieldCurrentItem = EditActivity.getCurrentItem();
 
 		ContactController contactController = new ContactController(mContext,
 				null);

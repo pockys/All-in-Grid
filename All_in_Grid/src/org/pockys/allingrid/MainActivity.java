@@ -8,11 +8,12 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
@@ -28,9 +29,6 @@ public class MainActivity extends Activity {
 	private static ViewPager mGridField;
 	private ViewPager mMenuField;
 
-	private static Hashtable<String, Integer> gridFieldcurrentItemByGroup = new Hashtable<String, Integer>();
-	private static String currentGroupSelection = null;
-	private static int gridFieldCurrentItem = 0;
 	private int menuFieldCurrentItem = 0;
 
 	private MenuController mMenuController;
@@ -38,6 +36,55 @@ public class MainActivity extends Activity {
 
 	private CirclePageIndicator mCirclePageIndicator;
 	private LinePageIndicator mLinePageIndicator;
+
+	private static GroupCellInfo currentGroupInfo = MenuController.AllGroupCellInfo;
+	private static Hashtable<GroupCellInfo, Integer> currentItemTable = new Hashtable<GroupCellInfo, Integer>();
+
+	public static Hashtable<GroupCellInfo, Integer> cloneCurrentItemTable() {
+		return (Hashtable<GroupCellInfo, Integer>) currentItemTable.clone();
+	}
+
+	public static int getCurrentItem() {
+		return getCurrentItem(currentGroupInfo);
+	}
+
+	public static int getCurrentItem(GroupCellInfo groupInfo) {
+		Integer value = currentItemTable.get(groupInfo);
+		return (value == null) ? 0 : value;
+	}
+
+	public static void saveCurrentItem() {
+		setCurrentItem(mGridField.getCurrentItem());
+	}
+
+	public static void setCurrentItem(int currentItem) {
+		setCurrentItem(getCurrentGroupInfo(), currentItem);
+	}
+
+	public static void setCurrentItem(GroupCellInfo groupInfo, int currentItem) {
+		currentItemTable.put(groupInfo, currentItem);
+	}
+
+	public static String getSelection(GroupCellInfo groupInfo) {
+		String groupTitle = groupInfo.getDisplayName();
+
+		if (groupTitle.equals("All")) {
+			return null;
+		} else if (groupTitle.equals("Favorite")) {
+			return ContactsContract.Contacts.STARRED + " = 1";
+		} else {
+			return ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+					+ " = " + groupInfo.getGroupId();
+		}
+	}
+
+	public static GroupCellInfo getCurrentGroupInfo() {
+		return currentGroupInfo;
+	}
+
+	public static void setCurrentGroupInfo(GroupCellInfo currentGroupInfo) {
+		MainActivity.currentGroupInfo = currentGroupInfo;
+	}
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -49,45 +96,52 @@ public class MainActivity extends Activity {
 
 	}
 
-	public void onResume() {
-		super.onResume();
+	public void onStart() {
+		super.onStart();
 
 		mMenuController = new MenuController(this);
-		mContactController = new ContactController(this, currentGroupSelection);
+		mContactController = new ContactController(this,
+				getSelection(getCurrentGroupInfo()));
 
 		mGridField = (ViewPager) findViewById(R.id.grid_field);
 		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
-		mGridField.setCurrentItem(getGridFieldCurrentItem());
 
 		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 		mCirclePageIndicator.setViewPager(mGridField);
-		mCirclePageIndicator.setCurrentItem(getGridFieldCurrentItem());
 
 		mMenuField = (ViewPager) findViewById(R.id.menu_field);
 		mMenuField.setAdapter(new CellPagerAdapter(mMenuController
 				.getMenuFieldViews(4)));
-		mMenuField.setCurrentItem(menuFieldCurrentItem);
 
 		mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
 		mLinePageIndicator.setViewPager(mMenuField);
+	}
+
+	public void onResume() {
+		super.onResume();
+
+		mGridField.setCurrentItem(getCurrentItem());
+		mCirclePageIndicator.setCurrentItem(getCurrentItem());
+		mMenuField.setCurrentItem(menuFieldCurrentItem);
 		mLinePageIndicator.setCurrentItem(menuFieldCurrentItem);
 
 		Log.d(TAG, "onResume: gridField currentGroup: "
-				+ getCurrentGroupSelection() + " currentItem: "
-				+ getGridFieldCurrentItem());
+				+ getCurrentGroupInfo().getDisplayName() + " currentItem: "
+				+ getCurrentItem());
 
 	}
 
 	public void onPause() {
 		super.onPause();
-		// gridFieldCurrentItem = gridField.getCurrentItem();
-		saveGridFieldCurrentItem();
+		saveCurrentItem();
 		menuFieldCurrentItem = mMenuField.getCurrentItem();
 
-		Log.d(TAG, "onPause: gridField currentGroup: "
-				+ getCurrentGroupSelection() + " gridField currentItem: "
-				+ mGridField.getCurrentItem());
+		Log.d(TAG,
+				"onPause: gridField currentGroup: "
+						+ currentGroupInfo.getDisplayName()
+						+ " gridField currentItem: "
+						+ mGridField.getCurrentItem());
 
 	}
 
@@ -97,7 +151,7 @@ public class MainActivity extends Activity {
 				"onBackPressed Called. gridField currentItem: "
 						+ mGridField.getCurrentItem());
 
-		final String groupSelection = getCurrentGroupSelection();
+		final String groupSelection = getSelection(currentGroupInfo);
 
 		if (groupSelection == null && mGridField.getCurrentItem() == 0) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -113,7 +167,7 @@ public class MainActivity extends Activity {
 			builder.create().show();
 
 		} else if (groupSelection != null && mGridField.getCurrentItem() == 0) {
-			setCurrentGroupSelection(null);
+			setCurrentGroupInfo(MenuController.AllGroupCellInfo);
 
 			getActionBar().setDisplayHomeAsUpEnabled(false);
 
@@ -121,15 +175,15 @@ public class MainActivity extends Activity {
 			mGridField = (ViewPager) findViewById(R.id.grid_field);
 			mGridField.setAdapter(new CellPagerAdapter(mContactController
 					.getGridFieldViews(4, 4)));
-			mGridField.setCurrentItem(getGridFieldCurrentItem());
+			mGridField.setCurrentItem(getCurrentItem());
 
 			mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 			mCirclePageIndicator.setViewPager(mGridField);
-			mCirclePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+			mCirclePageIndicator.setCurrentItem(getCurrentItem());
 			getActionBar().setTitle("All");
 		} else {
 
-			setGridFieldCurrentItem(0);
+			setCurrentItem(0);
 			mGridField.setCurrentItem(0);
 		}
 
@@ -153,9 +207,9 @@ public class MainActivity extends Activity {
 			actionBar.setTitle("All");
 			actionBar.setDisplayHomeAsUpEnabled(false);
 
-			MainActivity.saveGridFieldCurrentItem();
-			MainActivity.setCurrentGroupSelection(null);
-			int currentItem = MainActivity.getGridFieldCurrentItem(null);
+			saveCurrentItem();
+			setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+			int currentItem = getCurrentItem();
 
 			contactController = new ContactController(this, null);
 
@@ -214,45 +268,7 @@ public class MainActivity extends Activity {
 	}
 
 	public static void makeToast(Context context, String message) {
-		// with jam obviously
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-	}
-
-	public static void saveGridFieldCurrentItem() {
-		setGridFieldCurrentItem(mGridField.getCurrentItem());
-	}
-
-	public static void setGridFieldCurrentItem(String groupSelection,
-			int currentItem) {
-		if (groupSelection == null)
-			gridFieldCurrentItem = currentItem;
-		else
-			gridFieldcurrentItemByGroup.put(groupSelection, currentItem);
-	}
-
-	public static void setGridFieldCurrentItem(int currentItem) {
-		setGridFieldCurrentItem(getCurrentGroupSelection(), currentItem);
-	}
-
-	public static int getGridFieldCurrentItem(String groupSelection) {
-		if (groupSelection == null)
-			return gridFieldCurrentItem;
-		else if (gridFieldcurrentItemByGroup.get(groupSelection) == null)
-			return 0;
-		else
-			return gridFieldcurrentItemByGroup.get(groupSelection);
-	}
-
-	public static int getGridFieldCurrentItem() {
-		return getGridFieldCurrentItem(getCurrentGroupSelection());
-	}
-
-	public static String getCurrentGroupSelection() {
-		return currentGroupSelection;
-	}
-
-	public static void setCurrentGroupSelection(String currentGroupSelection) {
-		MainActivity.currentGroupSelection = currentGroupSelection;
 	}
 
 }
