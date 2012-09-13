@@ -35,6 +35,7 @@ public class CellAdapter extends BaseAdapter {
 		mContext = _context;
 		layoutInflater = LayoutInflater.from(mContext);
 		mCellInfoList = cellInfoList;
+
 	}
 
 	@Override
@@ -72,12 +73,77 @@ public class CellAdapter extends BaseAdapter {
 			if (rand == -1) {
 
 				SharedPreferences.Editor editor = sharedPreferences.edit();
-				rand = (int) (Math.random() * IconListLib.INSTANCE
-						.getIconInfoSize());
+
+				if (IconListLib.INSTANCE.getCurrentCategoy() == 0) {
+
+					rand = (int) (Math.random() * IconListLib.INSTANCE
+							.getAllIconInfoSize());
+
+				}
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 1) {
+
+					rand = (int) (Math.random() * IconListLib.INSTANCE
+							.getkinokoIconInfoSize());
+
+				}
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 2) {
+
+					rand = (int) (Math.random() * IconListLib.INSTANCE
+							.getstrangeIconInfoSize());
+
+				}
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 3) {
+
+					rand = (int) (Math.random() * IconListLib.INSTANCE
+							.getmonoIconInfoSize());
+
+				}
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 4) {
+
+					rand = (int) (Math.random() * IconListLib.INSTANCE
+							.gettizukigouViewIconInfoSize());
+
+				}
 				editor.putInt(Integer.toString(contactId), rand);
 				editor.commit();
 			}
-			IconInfo randomname = IconListLib.INSTANCE.getIconInfo(rand);
+
+			IconInfo randomname = null;
+
+			if (IconListLib.INSTANCE.getCurrentCategoy() == 0) {
+
+				randomname = IconListLib.INSTANCE.getAllIconInfo(rand);
+
+			}
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 1) {
+
+				randomname = IconListLib.INSTANCE.getkinokoIconInfo(rand);
+
+			}
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 2) {
+
+				randomname = IconListLib.INSTANCE.getstrangeIconInfo(rand);
+
+			}
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 3) {
+
+				randomname = IconListLib.INSTANCE.getmonoIconInfo(rand);
+
+			}
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 4) {
+
+				randomname = IconListLib.INSTANCE
+						.gettizukigouViewIconInfo(rand);
+
+			}
 			int Randname = randomname.getImage();
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
@@ -100,11 +166,7 @@ public class CellAdapter extends BaseAdapter {
 					.findViewById(R.id.cell_image);
 			imageView.setImageResource(cellInfo.getThumbnailResId());
 
-			// Log.d(TAG,
-			// "selected groupTitle: "
-			// + SelectedItemList.INSTANCE.getSelectedGroupInfo()
-			// .getDisplayName() + " this groupTitle: "
-			// + cellInfo.getDisplayName());
+
 
 			GroupCellInfo selectedGroupInfo = SelectedItemList.INSTANCE
 					.getSelectedGroupInfo();

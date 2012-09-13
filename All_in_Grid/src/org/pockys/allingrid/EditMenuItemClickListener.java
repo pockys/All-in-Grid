@@ -41,7 +41,7 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		GroupCellInfo selectedGroupInfo = (GroupCellInfo) view.getTag();
 		String selectedGroupTitle = selectedGroupInfo.getDisplayName();
 		int groupId = selectedGroupInfo.getGroupId();
-
+ 
 		ActionBar actionBar = ((Activity) mContext).getActionBar();
 
 		if (selectedPeopleCount == 0) {

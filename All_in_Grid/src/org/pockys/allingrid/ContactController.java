@@ -175,7 +175,7 @@ public class ContactController implements OnItemClickListener,
 			public void onClick(final DialogInterface dia, int arg1) {
 				if (arg1 == 0) {
 					CustomAdapter adp = new CustomAdapter(mContext,
-							R.layout.row);
+							R.layout.row, 0);
 
 					LayoutInflater inflater = LayoutInflater.from(mContext);
 					ListView lv = (ListView) inflater.inflate(
@@ -189,7 +189,7 @@ public class ContactController implements OnItemClickListener,
 								int arg2, long arg3) {
 
 							IconInfo Samp = IconListLib.INSTANCE
-									.getIconInfo(arg2);
+									.getAllIconInfo(arg2);
 
 							Log.d(TAG, "Check! ");
 
@@ -224,13 +224,123 @@ public class ContactController implements OnItemClickListener,
 
 				else if (arg1 == 1) {
 
-					Intent intent = new Intent(Intent.ACTION_EDIT);
-					Uri contactUri = Uri.withAppendedPath(
-							ContactsContract.Contacts.CONTENT_URI, ""
-									+ contactId);
-					intent.setData(contactUri);
+					final CharSequence[] Categoryitems = { "All Shuffle",
+							"Category Shuffle" };
 
-					mContext.startActivity(intent);
+					AlertDialog.Builder CategoryBuilder = new AlertDialog.Builder(
+							mContext);
+					CategoryBuilder.setTitle("Icon Shuffle");
+					OnClickListener Categorylistner = new OnClickListener() {
+
+						@Override
+						public void onClick(DialogInterface arg0, int arg1) {
+							if (arg1 == 0) {
+								IconListLib.INSTANCE.setCurrentCategoy(arg1);
+
+								SharedPreferences.Editor editor = sharedPreferences
+										.edit();
+								editor.clear();
+								editor.commit();
+
+								MenuController menuController = new MenuController(
+										mContext);
+								ContactController contactController = new ContactController(
+										mContext);
+								//
+								// Intent intent = new
+								// Intent(Intent.ACTION_EDIT);
+								// Uri contactUri = Uri.withAppendedPath(
+								// ContactsContract.Contacts.CONTENT_URI, ""
+								// + contactId);
+								// intent.setData(contactUri);
+								//
+								// ViewPager gridField = (ViewPager) ((Activity)
+								// mContext)
+								// .findViewById(R.id.grid_field);
+								// gridField.setAdapter(new
+								// CellPagerAdapter(contactController
+								// .getGridFieldViews(4, 4)));
+								//
+								// ViewPager menuField = (ViewPager) ((Activity)
+								// mContext)
+								// .findViewById(R.id.menu_field);
+								// menuField.setAdapter(new
+								// CellPagerAdapter(menuController
+								// .getMenuFieldViews(4)));
+								//
+								// MainActivity
+								// .makeToast(mContext,
+								// "All icons are shuffled!!");
+
+							} else if (arg1 == 1) {
+
+								CustomAdapter Sadp = new CustomAdapter(
+										mContext, R.layout.subrow, 1);
+
+								LayoutInflater inflater = LayoutInflater
+										.from(mContext);
+								ListView Sublv = (ListView) inflater.inflate(
+										R.layout.listview, null);
+
+								Sublv.setAdapter(Sadp);
+								Sublv.setOnItemClickListener(new OnItemClickListener() {
+
+									@Override
+									public void onItemClick(
+											AdapterView<?> arg0, View arg1,
+											int arg2, long arg3) {
+										IconListLib.INSTANCE
+												.setCurrentCategoy(arg2 + 1);
+
+										SharedPreferences.Editor editor = sharedPreferences
+												.edit();
+										editor.clear();
+										editor.commit();
+
+										// MenuController menuController = new
+										// MenuController(mContext);
+										// ContactController contactController =
+										// new ContactController(
+										// mContext);
+										//
+										// ViewPager gridField = (ViewPager)
+										// ((Activity) mContext)
+										// .findViewById(R.id.grid_field);
+										// gridField.setAdapter(new
+										// CellPagerAdapter(contactController
+										// .getGridFieldViews(4, 4)));
+										//
+										// ViewPager menuField = (ViewPager)
+										// ((Activity) mContext)
+										// .findViewById(R.id.menu_field);
+										// menuField.setAdapter(new
+										// CellPagerAdapter(menuController
+										// .getMenuFieldViews(4)));
+										//
+										// MainActivity
+										// .makeToast(mContext,
+										// "All icons are shuffled!!");
+
+									}
+
+								});
+
+								AlertDialog.Builder SubCategoryDialogBuilder = new AlertDialog.Builder(
+										mContext);
+
+								SubCategoryDialogBuilder
+										.setTitle("Change Icon");
+								SubCategoryDialogBuilder.setView(Sublv);
+
+								SubCategoryDialogBuilder.create().show();
+
+							}
+						}
+					};
+					CategoryBuilder.setItems(Categoryitems, Categorylistner);
+					CategoryBuilder.create().show();
+
+					// mContext.startActivity(intent);
 
 				}
 
@@ -255,29 +365,51 @@ class CustomAdapter extends BaseAdapter {
 	LayoutInflater mLayoutInflater;
 	Context context;
 	String tag = "test";
+	int type;
 
-	public CustomAdapter(Context _context, int resource) {
+	public CustomAdapter(Context _context, int resource, int t) {
 		super();
 		context = _context;
+		type = t;
 	}
 
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
 
-		mLayoutInflater = LayoutInflater.from(context);
-		if (v == null)
-			v = mLayoutInflater.inflate(R.layout.row, parent, false);
+		if (type == 0) {
 
-		IconInfo icon = (IconInfo) getItem(position);
+			mLayoutInflater = LayoutInflater.from(context);
+			if (v == null)
+				v = mLayoutInflater.inflate(R.layout.row, parent, false);
 
-		TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
-		countrycode.setText(icon.getName());
+			IconInfo icon = (IconInfo) getItem(position);
 
-		TextView countryname = (TextView) v.findViewById(R.id.countryname);
-		countryname.setText(icon.getInfo());
+			TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
+			countrycode.setText(icon.getName());
 
-		ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
-		app_icon.setImageResource(icon.getImage());
+			TextView countryname = (TextView) v.findViewById(R.id.countryname);
+			countryname.setText(icon.getInfo());
+
+			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
+			app_icon.setImageResource(icon.getImage());
+
+		}
+
+		else if (type == 1) {
+
+			mLayoutInflater = LayoutInflater.from(context);
+			if (v == null)
+				v = mLayoutInflater.inflate(R.layout.subrow, parent, false);
+
+			IconInfo icon = (IconInfo) getItem(position);
+
+			TextView countryname = (TextView) v.findViewById(R.id.countryname);
+			countryname.setText(icon.getInfo());
+
+			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
+			app_icon.setImageResource(icon.getImage());
+
+		}
 
 		return v;
 
@@ -286,13 +418,26 @@ class CustomAdapter extends BaseAdapter {
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return IconListLib.INSTANCE.getIconInfoSize();
+
+		if (type == 0) {
+			return IconListLib.INSTANCE.getAllIconInfoSize();
+		} else {
+
+			return IconListLib.INSTANCE.getListViewIconInfoSize();
+
+		}
 	}
 
 	@Override
 	public Object getItem(int position) {
 		// TODO Auto-generated method stub
-		return IconListLib.INSTANCE.getIconInfo(position);
+
+		if (type == 0) {
+			return IconListLib.INSTANCE.getAllIconInfo(position);
+		} else {
+			return IconListLib.INSTANCE.getListViewIconInfo(position);
+
+		}
 	}
 
 	@Override

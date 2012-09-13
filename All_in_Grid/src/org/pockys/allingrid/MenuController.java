@@ -40,15 +40,12 @@ public class MenuController implements OnItemClickListener {
 	private Cursor mGroupTitleCursor;
 	private OnItemClickListener mOnItemClickListener = this;
 
-	// private boolean mOnlyNotEmpty;
-
 	public int getSize() {
 		return mGroupTitleCursor.getCount();
 	}
 
 	public MenuController(Context context) {
 		mContext = context;
-		// mOnlyNotEmpty = onlyNotEmpty;
 		mGroupTitleCursor = getGroupTitles();
 	}
 
@@ -61,11 +58,6 @@ public class MenuController implements OnItemClickListener {
 		String selection = ContactsContract.Groups.TITLE
 				+ " NOT LIKE 'Starred in Android'" + " AND "
 				+ ContactsContract.Groups.ACCOUNT_TYPE + " LIKE 'com.google'";
-		// + " AND " + ContactsContract.Groups.GROUP_VISIBLE + " = '1'";
-		// if (mOnlyNotEmpty) {
-		// selection += " AND " + ContactsContract.Groups.SUMMARY_COUNT
-		// + " > 0";
-		// }
 
 		Cursor cursor = mContext.getContentResolver().query(
 				ContactsContract.Groups.CONTENT_SUMMARY_URI, GROUP_PROJECTION,

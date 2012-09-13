@@ -82,6 +82,7 @@ public class EditActivity extends Activity {
 		AlertDialog.Builder builder;
 
 		switch (item.getItemId()) {
+		// app icon in action bar clicked; go home
 		case android.R.id.home:
 			SelectedItemList.INSTANCE.clear();
 

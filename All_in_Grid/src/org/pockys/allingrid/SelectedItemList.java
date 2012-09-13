@@ -46,7 +46,7 @@ public enum SelectedItemList {
 		Log.d(TAG, "mSelected ContactId List\n" + list);
 
 	}
-
+ 
 	public GroupCellInfo getSelectedGroupInfo() {
 		return mSelectedGroupInfo;
 	}
