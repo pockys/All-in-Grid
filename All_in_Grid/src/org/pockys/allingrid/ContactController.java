@@ -3,17 +3,21 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 
 import android.app.AlertDialog;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -21,8 +25,10 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 public class ContactController implements OnItemClickListener,
@@ -33,7 +39,6 @@ public class ContactController implements OnItemClickListener,
 	private Context mContext;
 	private Cursor mContactsCursor;
 	private OnItemClickListener mOnItemClickListener = this;
-	// private String tab = "Fight";
 
 	private SharedPreferences sharedPreferences;
 
@@ -153,43 +158,99 @@ public class ContactController implements OnItemClickListener,
 	}
 
 	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View view, int arg2,
-			long arg3) {
-
+	public boolean onItemLongClick(AdapterView<?> parent, final View cell,
+			int position, long id) {
 		Log.d(TAG, "onItemLongClick");
 
-		final View cell = view;
-
-		assert (view.getTag() instanceof ContactCellInfo);
-		ContactCellInfo contactCellInfo = (ContactCellInfo) view.getTag();
+		assert (cell.getTag() instanceof ContactCellInfo);
+		final ContactCellInfo contactCellInfo = (ContactCellInfo) cell.getTag();
 
 		final int contactId = contactCellInfo.getContactId();
+		final boolean added = containFavorites(contactCellInfo);
 
-		final CharSequence[] items = { "Change Icon", "Edit Profile" };
+		// "Delete" };
+
+		// Log.d(TAG, items[2].toString());
 
 		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
-		FirstBuilder.setTitle("Pick a color");
-		OnClickListener listner = new OnClickListener() {
+		FirstBuilder.setTitle("Edit - " + contactCellInfo.getDisplayName());
+		ListView listView = new ListView(mContext);
+
+		// FirstBuilder.setItems(items, listener);
+
+		listView.setAdapter(new BaseAdapter() {
+			final String[] items = { "Change Icon", "Edit Profile",
+					(added) ? "Remove from Favorites" : "Add to Favorites", };
 
 			@Override
-			public void onClick(final DialogInterface dia, int arg1) {
-				if (arg1 == 0) {
-					CustomAdapter adp = new CustomAdapter(mContext,
-							R.layout.row, 0);
+			public View getView(int position, View convertView, ViewGroup parent) {
+				TextView textView = null;
+				if (convertView == null) {
+					textView = new TextView(mContext);
 
+				} else
+					textView = (TextView) convertView;
+
+				textView.setText(items[position]);
+
+				Log.d(TAG, "textView text:  " + items[position]);
+
+				return textView;
+			}
+
+			@Override
+			public long getItemId(int position) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public Object getItem(int position) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public int getCount() {
+				// TODO Auto-generated method stub
+				return items.length;
+			}
+		});
+		FirstBuilder.setView(listView);
+		final AlertDialog firstDialog = FirstBuilder.create();
+		listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				firstDialog.dismiss();
+
+			}
+
+		});
+
+		firstDialog.show();
+
+		DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(final DialogInterface dia, int position) {
+				if (position == 0) {
 					LayoutInflater inflater = LayoutInflater.from(mContext);
-					ListView lv = (ListView) inflater.inflate(
-							R.layout.listview, null);
 
-					lv.setAdapter(adp);
-					lv.setOnItemClickListener(new OnItemClickListener() {
+					GridView gridView = (GridView) inflater.inflate(
+							R.layout.grid_view, null);
+					gridView.setNumColumns(4);
+					gridView.setAdapter(new IconListAdapter(mContext, 0));
+
+					gridView.setOnItemClickListener(new OnItemClickListener() {
 
 						@Override
-						public void onItemClick(AdapterView<?> v, View arg1,
-								int arg2, long arg3) {
+						public void onItemClick(AdapterView<?> parent,
+								View view, int position, long id) {
 
 							IconInfo Samp = IconListLib.INSTANCE
-									.getAllIconInfo(arg2);
+									.getAllIconInfo(position);
 
 							Log.d(TAG, "Check! ");
 
@@ -199,10 +260,10 @@ public class ContactController implements OnItemClickListener,
 
 							SharedPreferences.Editor editor = sharedPreferences
 									.edit();
-							editor.putInt(Integer.toString(contactId), arg2);
+							editor.putInt(Integer.toString(contactId), position);
 							editor.commit();
 
-							// test
+							// back to MainActivity
 							Intent intent = new Intent(mContext,
 									MainActivity.class);
 							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -212,143 +273,57 @@ public class ContactController implements OnItemClickListener,
 
 					});
 
-					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+					AlertDialog.Builder iconChangeDialog = new AlertDialog.Builder(
 							mContext);
-
-					alertDialogBuilder.setTitle("Change Icon");
-					alertDialogBuilder.setView(lv);
-
-					alertDialogBuilder.create().show();
+					iconChangeDialog.setTitle("Change Icon");
+					iconChangeDialog.setView(gridView);
+					iconChangeDialog.create().show();
 
 				}
 
-				else if (arg1 == 1) {
+				else if (position == 1) {
 
-					final CharSequence[] Categoryitems = { "All Shuffle",
-							"Category Shuffle" };
+					Intent intent = new Intent(Intent.ACTION_EDIT);
+					Uri contactUri = Uri.withAppendedPath(
+							ContactsContract.Contacts.CONTENT_URI, ""
+									+ contactId);
+					intent.setData(contactUri);
+					mContext.startActivity(intent);
 
-					AlertDialog.Builder CategoryBuilder = new AlertDialog.Builder(
-							mContext);
-					CategoryBuilder.setTitle("Icon Shuffle");
-					OnClickListener Categorylistner = new OnClickListener() {
+				} else if (position == 2) {
+					setFavorites(contactCellInfo, !added);
 
-						@Override
-						public void onClick(DialogInterface arg0, int arg1) {
-							if (arg1 == 0) {
-								IconListLib.INSTANCE.setCurrentCategoy(arg1);
-
-								SharedPreferences.Editor editor = sharedPreferences
-										.edit();
-								editor.clear();
-								editor.commit();
-
-								MenuController menuController = new MenuController(
-										mContext);
-								ContactController contactController = new ContactController(
-										mContext);
-								//
-								// Intent intent = new
-								// Intent(Intent.ACTION_EDIT);
-								// Uri contactUri = Uri.withAppendedPath(
-								// ContactsContract.Contacts.CONTENT_URI, ""
-								// + contactId);
-								// intent.setData(contactUri);
-								//
-								// ViewPager gridField = (ViewPager) ((Activity)
-								// mContext)
-								// .findViewById(R.id.grid_field);
-								// gridField.setAdapter(new
-								// CellPagerAdapter(contactController
-								// .getGridFieldViews(4, 4)));
-								//
-								// ViewPager menuField = (ViewPager) ((Activity)
-								// mContext)
-								// .findViewById(R.id.menu_field);
-								// menuField.setAdapter(new
-								// CellPagerAdapter(menuController
-								// .getMenuFieldViews(4)));
-								//
-								// MainActivity
-								// .makeToast(mContext,
-								// "All icons are shuffled!!");
-
-							} else if (arg1 == 1) {
-
-								CustomAdapter Sadp = new CustomAdapter(
-										mContext, R.layout.subrow, 1);
-
-								LayoutInflater inflater = LayoutInflater
-										.from(mContext);
-								ListView Sublv = (ListView) inflater.inflate(
-										R.layout.listview, null);
-
-								Sublv.setAdapter(Sadp);
-								Sublv.setOnItemClickListener(new OnItemClickListener() {
-
-									@Override
-									public void onItemClick(
-											AdapterView<?> arg0, View arg1,
-											int arg2, long arg3) {
-										IconListLib.INSTANCE
-												.setCurrentCategoy(arg2 + 1);
-
-										SharedPreferences.Editor editor = sharedPreferences
-												.edit();
-										editor.clear();
-										editor.commit();
-
-										// MenuController menuController = new
-										// MenuController(mContext);
-										// ContactController contactController =
-										// new ContactController(
-										// mContext);
-										//
-										// ViewPager gridField = (ViewPager)
-										// ((Activity) mContext)
-										// .findViewById(R.id.grid_field);
-										// gridField.setAdapter(new
-										// CellPagerAdapter(contactController
-										// .getGridFieldViews(4, 4)));
-										//
-										// ViewPager menuField = (ViewPager)
-										// ((Activity) mContext)
-										// .findViewById(R.id.menu_field);
-										// menuField.setAdapter(new
-										// CellPagerAdapter(menuController
-										// .getMenuFieldViews(4)));
-										//
-										// MainActivity
-										// .makeToast(mContext,
-										// "All icons are shuffled!!");
-
-									}
-
-								});
-
-								AlertDialog.Builder SubCategoryDialogBuilder = new AlertDialog.Builder(
-										mContext);
-
-								SubCategoryDialogBuilder
-										.setTitle("Change Icon");
-								SubCategoryDialogBuilder.setView(Sublv);
-
-								SubCategoryDialogBuilder.create().show();
-
-							}
-						}
-					};
-					CategoryBuilder.setItems(Categoryitems, Categorylistner);
-					CategoryBuilder.create().show();
-
-					// mContext.startActivity(intent);
-
+					if (MainActivity.getCurrentGroupInfo().getDisplayName() == "Favorite") {
+						MainActivity
+								.resetGridField(MenuController.FavoriteGroupCellInfo);
+					}
 				}
+				/*
+				 * else if (position == 3) { ArrayList<ContentProviderOperation>
+				 * ops = new ArrayList<ContentProviderOperation>();
+				 * ops.add(ContentProviderOperation
+				 * .newDelete(ContactsContract.Contacts.CONTENT_URI)
+				 * .withSelection( ContactsContract.Contacts._ID + " = '" +
+				 * contactId + "'", null).build());
+				 * 
+				 * try { ContentProviderResult[] results = mContext
+				 * .getContentResolver().applyBatch( ContactsContract.AUTHORITY,
+				 * ops);
+				 * 
+				 * if (results == null || results.length == 0) {
+				 * MainActivity.makeToast(mContext, "Something was wrong!!"); }
+				 * else { MainActivity.makeToast(mContext,
+				 * contactCellInfo.getDisplayName() + " is deleted"); }
+				 * 
+				 * } catch (RemoteException e) { e.printStackTrace(); } catch
+				 * (OperationApplicationException e) { e.printStackTrace(); }
+				 * 
+				 * }
+				 */
 
 			}
 
 		};
-		FirstBuilder.setItems(items, listner);
-		FirstBuilder.create().show();
 
 		return false;
 
@@ -356,6 +331,62 @@ public class ContactController implements OnItemClickListener,
 
 	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
 		mOnItemClickListener = onItemClickListener;
+	}
+
+	public boolean containFavorites(ContactCellInfo contactInfo) {
+		String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
+				ContactsContract.Data.DISPLAY_NAME, };
+
+		String selection = ContactsContract.Contacts.STARRED + " = '1'";
+		selection += " AND " + ContactsContract.Contacts.IN_VISIBLE_GROUP
+				+ " = '1'";
+		selection += " AND " + ContactsContract.Data.CONTACT_ID + " = '"
+				+ contactInfo.getContactId() + "'";
+		Cursor cursor = mContext.getContentResolver().query(
+				ContactsContract.Data.CONTENT_URI, PROJECTION, selection, null,
+				null);
+
+		int count = cursor.getCount();
+		cursor.close();
+
+		return (count > 0);
+	}
+
+	public void setFavorites(ContactCellInfo contactInfo, boolean add) {
+
+		int contactId = contactInfo.getContactId();
+
+		ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+		ops.add(ContentProviderOperation
+				.newUpdate(ContactsContract.Contacts.CONTENT_URI)
+				.withSelection(
+						ContactsContract.Contacts._ID + " = '" + contactId
+								+ "'", null)
+				.withValue(ContactsContract.Contacts.STARRED, (add) ? 1 : 0)
+				.build());
+
+		try {
+			ContentProviderResult[] results = mContext.getContentResolver()
+					.applyBatch(ContactsContract.AUTHORITY, ops);
+
+			if (results == null) {
+				MainActivity.makeToast(mContext, "Something was wrong!!");
+			} else if (results.length > 0) {
+
+				String message = contactInfo.getDisplayName() + " is ";
+				message += (add) ? "added to Favorites"
+						: "removed from Favorites";
+
+				MainActivity.makeToast(mContext, message);
+			}
+		}
+
+		catch (OperationApplicationException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

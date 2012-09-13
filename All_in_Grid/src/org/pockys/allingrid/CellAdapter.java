@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,6 +109,10 @@ public class CellAdapter extends BaseAdapter {
 							.gettizukigouViewIconInfoSize());
 
 				}
+
+				Log.d(TAG, "Cell preference generated. contactId: " + contactId
+						+ " c: " + IconListLib.INSTANCE.getCurrentCategoy());
+
 				editor.putInt(Integer.toString(contactId), rand);
 				editor.commit();
 			}
@@ -187,5 +192,4 @@ public class CellAdapter extends BaseAdapter {
 		return cell;
 
 	}
-
 }

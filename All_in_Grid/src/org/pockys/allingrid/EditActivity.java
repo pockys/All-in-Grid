@@ -414,6 +414,7 @@ public class EditActivity extends Activity {
 			mActionBar.setTitle("Edit - All");
 
 			mContactController = new ContactController(this, null);
+			mContactController.setOnItemClickListener(mEditClickListener);
 			mGridField.setAdapter(new CellPagerAdapter(mContactController
 					.getGridFieldViews(4, 4)));
 			mGridField.setCurrentItem(getCurrentItem());
