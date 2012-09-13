@@ -166,8 +166,6 @@ public class CellAdapter extends BaseAdapter {
 					.findViewById(R.id.cell_image);
 			imageView.setImageResource(cellInfo.getThumbnailResId());
 
-
-
 			GroupCellInfo selectedGroupInfo = SelectedItemList.INSTANCE
 					.getSelectedGroupInfo();
 			if (selectedGroupInfo.getDisplayName().equals(
