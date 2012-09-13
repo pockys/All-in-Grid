@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
 
 public class EditGridItemClickListener implements OnItemClickListener {
 
@@ -27,7 +26,7 @@ public class EditGridItemClickListener implements OnItemClickListener {
 	public static int getSelectedContactIdListSize() {
 		return mSelectedContactIdList.size();
 	}
-	
+
 	public static Iterator<Integer> getSelectedContactIdListIterator() {
 		return mSelectedContactIdList.iterator();
 	}
