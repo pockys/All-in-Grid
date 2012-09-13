@@ -191,6 +191,7 @@ public enum IconListLib {
 	}
 	
 	public int getAllIconInfoSize(){
+
 		return data.size();
 	}
 	

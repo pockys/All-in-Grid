@@ -2,16 +2,15 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,12 +28,14 @@ import android.widget.TextView;
 public class ContactController implements OnItemClickListener,
 		OnItemLongClickListener {
 
+	private static final String TAG = "ContactController";
+
 	private Context mContext;
 	private Cursor mContactsCursor;
 	private OnItemClickListener mOnItemClickListener = this;
-	String tab = "Fight";
+	private String tab = "Fight";
 
-	SharedPreferences sharedPreferences;
+	private SharedPreferences sharedPreferences;
 
 	public ContactController(Context context) {
 		this(context, null);
@@ -126,9 +127,11 @@ public class ContactController implements OnItemClickListener,
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(mOnItemClickListener);
+			gridView.setOnItemLongClickListener(this);
 
 			gridViewList.add(gridView);
 		}
+		mContactsCursor.close();
 
 		return gridViewList;
 	}
@@ -156,6 +159,8 @@ public class ContactController implements OnItemClickListener,
 	public boolean onItemLongClick(AdapterView<?> arg0, View view, int arg2,
 			long arg3) {
 
+		Log.d(TAG, "onItemLongClick");
+
 		final View cell = view;
 
 		assert (view.getTag() instanceof ContactCellInfo);
@@ -163,8 +168,7 @@ public class ContactController implements OnItemClickListener,
 
 		final int contactId = contactCellInfo.getContactId();
 
-		final CharSequence[] items = { "Change Icon", "Icon Shaffle",
-				"Profile Edit" };
+		final CharSequence[] items = { "Change Icon", "Edit Profile" };
 
 		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
 		FirstBuilder.setTitle("Pick a color");
@@ -190,16 +194,22 @@ public class ContactController implements OnItemClickListener,
 							IconInfo Samp = IconListLib.INSTANCE
 									.getAllIconInfo(arg2);
 
-							// SharedPreferences.Editor editor =
-							// sharedPreferences.edit();
-
 							Log.d(tab, "Check! ");
-							// editor.putInt(Integer.toString(contactId), arg2);
-							// editor.commit();
 
 							ImageView imageView = (ImageView) cell
 									.findViewById(R.id.cell_image);
 							imageView.setImageResource(Samp.getImage());
+
+							SharedPreferences.Editor editor = sharedPreferences
+									.edit();
+							editor.putInt(Integer.toString(contactId), arg2);
+							editor.commit();
+
+							// test
+							Intent intent = new Intent(mContext,
+									MainActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							mContext.startActivity(intent);
 
 						}
 
@@ -216,49 +226,62 @@ public class ContactController implements OnItemClickListener,
 				}
 
 				else if (arg1 == 1) {
-					
-					final CharSequence[] Categoryitems = { "All Shuffle", "Category Shuffle" };
-			
-					AlertDialog.Builder CategoryBuilder = new AlertDialog.Builder(mContext);
+
+					final CharSequence[] Categoryitems = { "All Shuffle",
+							"Category Shuffle" };
+
+					AlertDialog.Builder CategoryBuilder = new AlertDialog.Builder(
+							mContext);
 					CategoryBuilder.setTitle("Icon Shuffle");
 					OnClickListener Categorylistner = new OnClickListener() {
 
 						@Override
 						public void onClick(DialogInterface arg0, int arg1) {
-							if(arg1 == 0){
+							if (arg1 == 0) {
 								IconListLib.INSTANCE.setCurrentCategoy(arg1);
-								
-								SharedPreferences.Editor editor = sharedPreferences.edit();
+
+								SharedPreferences.Editor editor = sharedPreferences
+										.edit();
 								editor.clear();
 								editor.commit();
-								
-								MenuController menuController = new MenuController(mContext);
+
+								MenuController menuController = new MenuController(
+										mContext);
 								ContactController contactController = new ContactController(
 										mContext);
+								//
+								// Intent intent = new
+								// Intent(Intent.ACTION_EDIT);
+								// Uri contactUri = Uri.withAppendedPath(
+								// ContactsContract.Contacts.CONTENT_URI, ""
+								// + contactId);
+								// intent.setData(contactUri);
+								//
+								// ViewPager gridField = (ViewPager) ((Activity)
+								// mContext)
+								// .findViewById(R.id.grid_field);
+								// gridField.setAdapter(new
+								// CellPagerAdapter(contactController
+								// .getGridFieldViews(4, 4)));
+								//
+								// ViewPager menuField = (ViewPager) ((Activity)
+								// mContext)
+								// .findViewById(R.id.menu_field);
+								// menuField.setAdapter(new
+								// CellPagerAdapter(menuController
+								// .getMenuFieldViews(4)));
+								//
+								// MainActivity
+								// .makeToast(mContext,
+								// "All icons are shuffled!!");
 
-								ViewPager gridField = (ViewPager) ((Activity) mContext)
-										.findViewById(R.id.grid_field);
-								gridField.setAdapter(new CellPagerAdapter(contactController
-										.getGridFieldViews(4, 4)));
+							} else if (arg1 == 1) {
 
-								ViewPager menuField = (ViewPager) ((Activity) mContext)
-										.findViewById(R.id.menu_field);
-								menuField.setAdapter(new CellPagerAdapter(menuController
-										.getMenuFieldViews(4)));
+								CustomAdapter Sadp = new CustomAdapter(
+										mContext, R.layout.subrow, 1);
 
-								MainActivity
-										.makeToast(mContext, "All icons are shuffled!!");
-								
-								
-
-							}
-							else if(arg1 == 1){
-
-								
-								CustomAdapter Sadp = new CustomAdapter(mContext,
-										R.layout.subrow, 1);
-
-								LayoutInflater inflater = LayoutInflater.from(mContext);
+								LayoutInflater inflater = LayoutInflater
+										.from(mContext);
 								ListView Sublv = (ListView) inflater.inflate(
 										R.layout.listview, null);
 
@@ -269,52 +292,58 @@ public class ContactController implements OnItemClickListener,
 									public void onItemClick(
 											AdapterView<?> arg0, View arg1,
 											int arg2, long arg3) {
-										IconListLib.INSTANCE.setCurrentCategoy(arg2 + 1);
-										
-										SharedPreferences.Editor editor = sharedPreferences.edit();
+										IconListLib.INSTANCE
+												.setCurrentCategoy(arg2 + 1);
+
+										SharedPreferences.Editor editor = sharedPreferences
+												.edit();
 										editor.clear();
 										editor.commit();
-										
-										MenuController menuController = new MenuController(mContext);
-										ContactController contactController = new ContactController(
-												mContext);
 
-										ViewPager gridField = (ViewPager) ((Activity) mContext)
-												.findViewById(R.id.grid_field);
-										gridField.setAdapter(new CellPagerAdapter(contactController
-												.getGridFieldViews(4, 4)));
+										// MenuController menuController = new
+										// MenuController(mContext);
+										// ContactController contactController =
+										// new ContactController(
+										// mContext);
+										//
+										// ViewPager gridField = (ViewPager)
+										// ((Activity) mContext)
+										// .findViewById(R.id.grid_field);
+										// gridField.setAdapter(new
+										// CellPagerAdapter(contactController
+										// .getGridFieldViews(4, 4)));
+										//
+										// ViewPager menuField = (ViewPager)
+										// ((Activity) mContext)
+										// .findViewById(R.id.menu_field);
+										// menuField.setAdapter(new
+										// CellPagerAdapter(menuController
+										// .getMenuFieldViews(4)));
+										//
+										// MainActivity
+										// .makeToast(mContext,
+										// "All icons are shuffled!!");
 
-										ViewPager menuField = (ViewPager) ((Activity) mContext)
-												.findViewById(R.id.menu_field);
-										menuField.setAdapter(new CellPagerAdapter(menuController
-												.getMenuFieldViews(4)));
-
-										MainActivity
-												.makeToast(mContext, "All icons are shuffled!!");
-
-										
-										
 									}
-									
-									
-								
+
 								});
-								
+
 								AlertDialog.Builder SubCategoryDialogBuilder = new AlertDialog.Builder(
 										mContext);
 
-								SubCategoryDialogBuilder.setTitle("Change Icon");
+								SubCategoryDialogBuilder
+										.setTitle("Change Icon");
 								SubCategoryDialogBuilder.setView(Sublv);
 
 								SubCategoryDialogBuilder.create().show();
-								
 
-							}							
-						}						
+							}
+						}
 					};
 					CategoryBuilder.setItems(Categoryitems, Categorylistner);
 					CategoryBuilder.create().show();
-				
+
+					// mContext.startActivity(intent);
 
 				}
 
@@ -348,27 +377,27 @@ class CustomAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View v, ViewGroup parent) {
-		
-		if(type == 0){
 
-		mLayoutInflater = LayoutInflater.from(context);
-		if (v == null)
-			v = mLayoutInflater.inflate(R.layout.row, parent, false);
+		if (type == 0) {
 
-		IconInfo icon = (IconInfo) getItem(position);
+			mLayoutInflater = LayoutInflater.from(context);
+			if (v == null)
+				v = mLayoutInflater.inflate(R.layout.row, parent, false);
 
-		TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
-		countrycode.setText(icon.getName());
+			IconInfo icon = (IconInfo) getItem(position);
 
-		TextView countryname = (TextView) v.findViewById(R.id.countryname);
-		countryname.setText(icon.getInfo());
+			TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
+			countrycode.setText(icon.getName());
 
-		ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
-		app_icon.setImageResource(icon.getImage());
-		
+			TextView countryname = (TextView) v.findViewById(R.id.countryname);
+			countryname.setText(icon.getInfo());
+
+			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
+			app_icon.setImageResource(icon.getImage());
+
 		}
-		
-		else if(type == 1){
+
+		else if (type == 1) {
 
 			mLayoutInflater = LayoutInflater.from(context);
 			if (v == null)
@@ -376,14 +405,13 @@ class CustomAdapter extends BaseAdapter {
 
 			IconInfo icon = (IconInfo) getItem(position);
 
-			
 			TextView countryname = (TextView) v.findViewById(R.id.countryname);
 			countryname.setText(icon.getInfo());
 
 			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
 			app_icon.setImageResource(icon.getImage());
-			
-			}
+
+		}
 
 		return v;
 
@@ -392,27 +420,25 @@ class CustomAdapter extends BaseAdapter {
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		
-		if(type == 0){
-		return IconListLib.INSTANCE.getAllIconInfoSize();
-		}
-		else {
-			
+
+		if (type == 0) {
+			return IconListLib.INSTANCE.getAllIconInfoSize();
+		} else {
+
 			return IconListLib.INSTANCE.getListViewIconInfoSize();
-		
+
 		}
 	}
 
 	@Override
 	public Object getItem(int position) {
 		// TODO Auto-generated method stub
-		
-		if(type == 0){
-		return IconListLib.INSTANCE.getAllIconInfo(position);
-		}
-		else{
+
+		if (type == 0) {
+			return IconListLib.INSTANCE.getAllIconInfo(position);
+		} else {
 			return IconListLib.INSTANCE.getListViewIconInfo(position);
-			
+
 		}
 	}
 

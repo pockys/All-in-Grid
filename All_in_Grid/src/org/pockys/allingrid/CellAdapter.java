@@ -1,7 +1,6 @@
 package org.pockys.allingrid;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,7 +20,6 @@ public class CellAdapter extends BaseAdapter {
 	private LayoutInflater layoutInflater;
 
 	private SharedPreferences sharedPreferences;
-	
 
 	ArrayList<Integer> iconList = new ArrayList<Integer>();
 
@@ -32,12 +30,12 @@ public class CellAdapter extends BaseAdapter {
 
 		sharedPreferences = _context.getSharedPreferences("sharePreferences",
 				Context.MODE_PRIVATE);
-		
+
 		mContext = _context;
 		layoutInflater = LayoutInflater.from(mContext);
 		mCellInfoList = cellInfoList;
-		
-		}
+
+	}
 
 	@Override
 	public int getCount() {
@@ -58,8 +56,7 @@ public class CellAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		
-	
+
 		View cell = convertView;
 		if (convertView == null)
 			cell = layoutInflater.inflate(R.layout.cell, null);
@@ -75,75 +72,76 @@ public class CellAdapter extends BaseAdapter {
 			if (rand == -1) {
 
 				SharedPreferences.Editor editor = sharedPreferences.edit();
-				
-				if(IconListLib.INSTANCE.getCurrentCategoy() == 0){
-				
-				rand = (int) (Math.random() * IconListLib.INSTANCE
-						.getAllIconInfoSize());
-				
+
+				if (IconListLib.INSTANCE.getCurrentCategoy() == 0) {
+
+					rand = (int) (Math.random() * IconListLib.INSTANCE
+							.getAllIconInfoSize());
+
 				}
-				
-				else if(IconListLib.INSTANCE.getCurrentCategoy() == 1){
-					
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 1) {
+
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getkinokoIconInfoSize());
-											
+
 				}
-				
-				else if(IconListLib.INSTANCE.getCurrentCategoy() == 2){
-					
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 2) {
+
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getstrangeIconInfoSize());
-											
+
 				}
-				
-				else if(IconListLib.INSTANCE.getCurrentCategoy() == 3){
-					
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 3) {
+
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getmonoIconInfoSize());
-											
+
 				}
-				
-				else if(IconListLib.INSTANCE.getCurrentCategoy() == 4){
-					
+
+				else if (IconListLib.INSTANCE.getCurrentCategoy() == 4) {
+
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.gettizukigouViewIconInfoSize());
-											
+
 				}
 				editor.putInt(Integer.toString(contactId), rand);
 				editor.commit();
 			}
-			
+
 			IconInfo randomname = null;
-			
-			if(IconListLib.INSTANCE.getCurrentCategoy() == 0){
-			
+
+			if (IconListLib.INSTANCE.getCurrentCategoy() == 0) {
+
 				randomname = IconListLib.INSTANCE.getAllIconInfo(rand);
-			
+
 			}
-			
-			else if(IconListLib.INSTANCE.getCurrentCategoy() == 1){
-				
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 1) {
+
 				randomname = IconListLib.INSTANCE.getkinokoIconInfo(rand);
-			
+
 			}
-			
-			else if(IconListLib.INSTANCE.getCurrentCategoy() == 2){
-				
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 2) {
+
 				randomname = IconListLib.INSTANCE.getstrangeIconInfo(rand);
-			
+
 			}
-			
-			else if(IconListLib.INSTANCE.getCurrentCategoy() == 3){
-				
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 3) {
+
 				randomname = IconListLib.INSTANCE.getmonoIconInfo(rand);
-			
+
 			}
-			
-			else if(IconListLib.INSTANCE.getCurrentCategoy() == 4){
-				
-				randomname = IconListLib.INSTANCE.gettizukigouViewIconInfo(rand);
-			
+
+			else if (IconListLib.INSTANCE.getCurrentCategoy() == 4) {
+
+				randomname = IconListLib.INSTANCE
+						.gettizukigouViewIconInfo(rand);
+
 			}
 			int Randname = randomname.getImage();
 			ImageView imageView = (ImageView) cell
@@ -151,12 +149,8 @@ public class CellAdapter extends BaseAdapter {
 			imageView.setImageResource(Randname);
 
 			if (((Activity) mContext).getClass().equals(EditActivity.class)
-					&& SelectedItemList.INSTANCE.contain(contactId))  {
-				// imageView.setAlpha(EditClickListener.ALPHA_VALUE);
-				// imageView
-				// .setBackgroundColor(EditClickListener.BACKGROUND_COLOR);
+					&& SelectedItemList.INSTANCE.contain(contactId)) {
 
-				// cell.setAlpha(EditClickListener.ALPHA_VALUE);
 				cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
 
 			}
