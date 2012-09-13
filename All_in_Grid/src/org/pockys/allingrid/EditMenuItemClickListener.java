@@ -3,6 +3,7 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
@@ -34,74 +35,119 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 
-		int selectedPeopleCount = EditGridItemClickListener
-				.getSelectedContactIdListSize();
-
-		if (selectedPeopleCount == 0)
-			return;
+		int selectedPeopleCount = SelectedItemList.INSTANCE.getSize();
 
 		assert (view.getTag() instanceof GroupCellInfo) : " is not instance of GroupCellInfo!!";
 		GroupCellInfo groupCellInfo = (GroupCellInfo) view.getTag();
-
-		MainActivity.makeToast(mContext, "Insert " + selectedPeopleCount
-				+ " people to " + groupCellInfo.getDisplayName());
-
 		String groupTitle = groupCellInfo.getDisplayName();
-
-		// insert
 		int groupId = groupCellInfo.getGroupId();
 
+		ActionBar actionBar = ((Activity) mContext).getActionBar();
+
 		Log.d(TAG, "Group ID: " + groupId);
+		if (selectedPeopleCount == 0) {
 
-		ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-		ContentProviderOperation.Builder op;
+			actionBar.setTitle("Edit - " + groupTitle);
+			EditActivity.setCurrentGroupInfo(groupCellInfo);
 
-		Iterator<Integer> contactIdItr = EditGridItemClickListener
-				.getSelectedContactIdListIterator();
-		for (; contactIdItr.hasNext();) {
-			int contactId = contactIdItr.next();
-
+			int gridFieldCurrentItem = EditActivity.getGridFieldCurrentItem();
+			String selection = null;
 			if (groupTitle == "All") {
 
 			} else if (groupTitle == "Favorite") {
-				Log.d(TAG, "Favorite. contact Id: " + contactId);
-				op = ContentProviderOperation
-						.newUpdate(ContactsContract.Contacts.CONTENT_URI)
-						.withSelection(
-								ContactsContract.Contacts._ID + " = '"
-										+ getRawContactId(contactId) + "'",
-								null)
-						.withValue(ContactsContract.Contacts.STARRED, 1);
-				ops.add(op.build());
+				selection = ContactsContract.Contacts.STARRED + " = 1 ";
 
 			} else {
-				op = ContentProviderOperation
-						.newInsert(ContactsContract.Data.CONTENT_URI)
-						.withValue(ContactsContract.Data.RAW_CONTACT_ID,
-								getRawContactId(contactId))
-						.withValue(ContactsContract.Data.MIMETYPE,
-								ContactsContract.Data.CONTENT_TYPE)
-						.withValue(
-								ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
-								groupId);
-				ops.add(op.build());
+				selection = ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+						+ " = '" + groupId + "'";
+			}
+
+			ContactController contactController = new ContactController(
+					mContext, selection);
+			contactController
+					.setOnItemClickListener(new EditGridItemClickListener(
+							mContext));
+
+			ViewPager gridField = (ViewPager) ((Activity) mContext)
+					.findViewById(R.id.grid_field);
+			gridField.setAdapter(new CellPagerAdapter(contactController
+					.getGridFieldViews(4, 4)));
+			gridField.setCurrentItem(gridFieldCurrentItem);
+
+			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) ((Activity) mContext)
+					.findViewById(R.id.circle_page_indicator_grid);
+			circlePageIndicator.setViewPager(gridField);
+			circlePageIndicator.setCurrentItem(gridFieldCurrentItem);
+			return;
+		} else {
+
+			// insert
+			ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+			ContentProviderOperation.Builder op;
+
+			Iterator<Integer> contactIdItr = SelectedItemList.INSTANCE
+					.getIterator();
+			for (; contactIdItr.hasNext();) {
+				int contactId = contactIdItr.next();
+
+				if (groupTitle == "All") {
+					MainActivity.makeToast(mContext, "Clear all selection");
+					// SelectedItemList.INSTANCE.clear();
+
+					resetField();
+					return;
+
+				} else if (groupTitle == "Favorite") {
+					Log.d(TAG, "Favorite. contact Id: " + contactId);
+					op = ContentProviderOperation
+							.newUpdate(ContactsContract.Contacts.CONTENT_URI)
+							.withSelection(
+									ContactsContract.Contacts._ID + " = '"
+											+ contactId + "'", null)
+							.withValue(ContactsContract.Contacts.STARRED, 1);
+					ops.add(op.build());
+
+				} else {
+					op = ContentProviderOperation
+							.newInsert(ContactsContract.Data.CONTENT_URI)
+							.withValue(ContactsContract.Data.RAW_CONTACT_ID,
+									getRawContactId(mContext, contactId))
+							.withValue(ContactsContract.Data.MIMETYPE,
+									ContactsContract.Data.CONTENT_TYPE)
+							.withValue(
+									ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
+									groupId);
+					ops.add(op.build());
+				}
+
+			}
+
+			try {
+				ContentProviderResult[] results = mContext.getContentResolver()
+						.applyBatch(ContactsContract.AUTHORITY, ops);
+
+				MainActivity.makeToast(mContext,
+						"Insert " + selectedPeopleCount + " people to "
+								+ groupCellInfo.getDisplayName());
+
+			}
+
+			catch (OperationApplicationException e) {
+				MainActivity.makeToast(mContext, "Something was wrong!!");
+				e.printStackTrace();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			} finally {
+				resetField();
+
 			}
 
 		}
+	}
 
-		try {
-			ContentProviderResult[] results = mContext.getContentResolver()
-					.applyBatch(ContactsContract.AUTHORITY, ops);
-		}
+	private void resetField() {
 
-		catch (OperationApplicationException e) {
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-
-		// ################################################################
-		EditGridItemClickListener.clear();
+		SelectedItemList.INSTANCE.clear();
 		EditActivity.saveGridFieldCurrentItem();
 
 		int gridFieldCurrentItem = EditActivity.getGridFieldCurrentItem();
@@ -121,15 +167,14 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 				.findViewById(R.id.circle_page_indicator_grid);
 		circlePageIndicator.setViewPager(gridField);
 		circlePageIndicator.setCurrentItem(gridFieldCurrentItem);
-		// ################################################################
 
 	}
 
-	private int getRawContactId(int contactId) {
+	public static int getRawContactId(Context context, int contactId) {
 		String[] selection = new String[] { ContactsContract.Data.RAW_CONTACT_ID, };
 		String where = ContactsContract.Data.CONTACT_ID + " = '" + contactId
 				+ "'";
-		Cursor cursor = mContext.getContentResolver()
+		Cursor cursor = context.getContentResolver()
 				.query(ContactsContract.Data.CONTENT_URI, selection, where,
 						null, null);
 		for (; cursor.moveToNext();) {

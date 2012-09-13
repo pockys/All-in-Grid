@@ -33,12 +33,12 @@ public enum IconListLib {
 		data.add(new IconInfo(R.drawable.ic_tizukigou_004, "tizukigou_004",
 				"tizukigou_004", 12));
 	}
-	
+
 	public IconInfo getIconInfo(int position) {
 		return data.get(position);
 	}
-	
-	public int getIconInfoSize(){
+
+	public int getIconInfoSize() {
 		return data.size();
 	}
 

@@ -28,7 +28,8 @@
         <activity
             android:name=".EditActivity"
             android:label="@string/title_edit_activity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light" >
         </activity>
     </application>
 

@@ -83,7 +83,7 @@ public class CellAdapter extends BaseAdapter {
 			imageView.setImageResource(Randname);
 
 			if (((Activity) mContext).getClass().equals(EditActivity.class)
-					&& EditGridItemClickListener.containContactId(contactId)) {
+					&& SelectedItemList.INSTANCE.contain(contactId)) {
 				// imageView.setAlpha(EditClickListener.ALPHA_VALUE);
 				// imageView
 				// .setBackgroundColor(EditClickListener.BACKGROUND_COLOR);

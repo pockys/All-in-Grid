@@ -8,6 +8,7 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
@@ -24,23 +25,26 @@ import com.viewpagerindicator.LinePageIndicator;
 public class MainActivity extends Activity {
 
 	static final String TAG = "MainActivity";
-	private static ViewPager gridField;
-	private ViewPager menuField;
+	private static ViewPager mGridField;
+	private ViewPager mMenuField;
 
 	private static Hashtable<String, Integer> gridFieldcurrentItemByGroup = new Hashtable<String, Integer>();
 	private static String currentGroupSelection = null;
 	private static int gridFieldCurrentItem = 0;
 	private int menuFieldCurrentItem = 0;
 
-	private MenuController menuController;
-	private ContactController contactController;
+	private MenuController mMenuController;
+	private ContactController mContactController;
+
+	private CirclePageIndicator mCirclePageIndicator;
+	private LinePageIndicator mLinePageIndicator;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
 		ActionBar actionBar = getActionBar();
-		// actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(false);
 		actionBar.show();
 
 	}
@@ -48,26 +52,26 @@ public class MainActivity extends Activity {
 	public void onResume() {
 		super.onResume();
 
-		menuController = new MenuController(this);
-		contactController = new ContactController(this, currentGroupSelection);
+		mMenuController = new MenuController(this);
+		mContactController = new ContactController(this, currentGroupSelection);
 
-		gridField = (ViewPager) findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(contactController
+		mGridField = (ViewPager) findViewById(R.id.grid_field);
+		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
-		gridField.setCurrentItem(getGridFieldCurrentItem());
+		mGridField.setCurrentItem(getGridFieldCurrentItem());
 
-		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-		circlePageIndicator.setViewPager(gridField);
-		circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+		mCirclePageIndicator.setViewPager(mGridField);
+		mCirclePageIndicator.setCurrentItem(getGridFieldCurrentItem());
 
-		menuField = (ViewPager) findViewById(R.id.menu_field);
-		menuField.setAdapter(new CellPagerAdapter(menuController
+		mMenuField = (ViewPager) findViewById(R.id.menu_field);
+		mMenuField.setAdapter(new CellPagerAdapter(mMenuController
 				.getMenuFieldViews(4)));
-		menuField.setCurrentItem(menuFieldCurrentItem);
+		mMenuField.setCurrentItem(menuFieldCurrentItem);
 
-		LinePageIndicator linePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
-		linePageIndicator.setViewPager(menuField);
-		linePageIndicator.setCurrentItem(menuFieldCurrentItem);
+		mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
+		mLinePageIndicator.setViewPager(mMenuField);
+		mLinePageIndicator.setCurrentItem(menuFieldCurrentItem);
 
 		Log.d(TAG, "onResume: gridField currentGroup: "
 				+ getCurrentGroupSelection() + " currentItem: "
@@ -79,11 +83,11 @@ public class MainActivity extends Activity {
 		super.onPause();
 		// gridFieldCurrentItem = gridField.getCurrentItem();
 		saveGridFieldCurrentItem();
-		menuFieldCurrentItem = menuField.getCurrentItem();
+		menuFieldCurrentItem = mMenuField.getCurrentItem();
 
 		Log.d(TAG, "onPause: gridField currentGroup: "
 				+ getCurrentGroupSelection() + " gridField currentItem: "
-				+ gridField.getCurrentItem());
+				+ mGridField.getCurrentItem());
 
 	}
 
@@ -91,11 +95,11 @@ public class MainActivity extends Activity {
 	public void onBackPressed() {
 		Log.d(TAG,
 				"onBackPressed Called. gridField currentItem: "
-						+ gridField.getCurrentItem());
+						+ mGridField.getCurrentItem());
 
 		final String groupSelection = getCurrentGroupSelection();
 
-		if (groupSelection == null && gridField.getCurrentItem() == 0) {
+		if (groupSelection == null && mGridField.getCurrentItem() == 0) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Do you want to quit?");
 			builder.setPositiveButton("Yes", new OnClickListener() {
@@ -108,22 +112,25 @@ public class MainActivity extends Activity {
 			builder.setNegativeButton("No", null);
 			builder.create().show();
 
-		} else if (groupSelection != null && gridField.getCurrentItem() == 0) {
+		} else if (groupSelection != null && mGridField.getCurrentItem() == 0) {
 			setCurrentGroupSelection(null);
 
-			contactController = new ContactController(this, null);
-			gridField = (ViewPager) findViewById(R.id.grid_field);
-			gridField.setAdapter(new CellPagerAdapter(contactController
-					.getGridFieldViews(4, 4)));
-			gridField.setCurrentItem(getGridFieldCurrentItem());
+			getActionBar().setDisplayHomeAsUpEnabled(false);
 
-			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-			circlePageIndicator.setViewPager(gridField);
-			circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+			mContactController = new ContactController(this, null);
+			mGridField = (ViewPager) findViewById(R.id.grid_field);
+			mGridField.setAdapter(new CellPagerAdapter(mContactController
+					.getGridFieldViews(4, 4)));
+			mGridField.setCurrentItem(getGridFieldCurrentItem());
+
+			mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+			mCirclePageIndicator.setViewPager(mGridField);
+			mCirclePageIndicator.setCurrentItem(getGridFieldCurrentItem());
 			getActionBar().setTitle("All");
 		} else {
+
 			setGridFieldCurrentItem(0);
-			gridField.setCurrentItem(0);
+			mGridField.setCurrentItem(0);
 		}
 
 	}
@@ -135,20 +142,36 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		makeToast(this, item.getTitle().toString());
+		// makeToast(this, item.getTitle().toString());
 
 		Intent intent;
+		ContactController contactController;
 		switch (item.getItemId()) {
+		case android.R.id.home:
+
+			ActionBar actionBar = this.getActionBar();
+			actionBar.setTitle("All");
+			actionBar.setDisplayHomeAsUpEnabled(false);
+
+			MainActivity.saveGridFieldCurrentItem();
+			MainActivity.setCurrentGroupSelection(null);
+			int currentItem = MainActivity.getGridFieldCurrentItem(null);
+
+			contactController = new ContactController(this, null);
+
+			mGridField.setAdapter(new CellPagerAdapter(contactController
+					.getGridFieldViews(4, 4)));
+			mGridField.setCurrentItem(currentItem);
+			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) this
+					.findViewById(R.id.circle_page_indicator_grid);
+			circlePageIndicator.setViewPager(mGridField);
+			circlePageIndicator.setCurrentItem(currentItem);
+
+			break;
 		case R.id.menu_phone:
 			intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
 			startActivity(intent);
 			break;
-		// case R.id.menu_icon:
-		//
-		// break;
-		// case R.id.menu_search:
-		//
-		// break;
 		case R.id.menu_edit:
 			intent = new Intent(this, EditActivity.class);
 			startActivity(intent);
@@ -161,6 +184,28 @@ public class MainActivity extends Activity {
 			intent.setComponent(new ComponentName(packageName, packageName
 					+ className));
 			startActivity(intent);
+			break;
+		case R.id.menu_shuffle_icons:
+
+			SharedPreferences.Editor editor = getSharedPreferences(
+					"sharePreferences", Context.MODE_PRIVATE).edit();
+			editor.clear();
+			editor.commit();
+
+			MenuController menuController = new MenuController(this);
+			contactController = new ContactController(this);
+
+			ViewPager gridField = (ViewPager) this
+					.findViewById(R.id.grid_field);
+			gridField.setAdapter(new CellPagerAdapter(contactController
+					.getGridFieldViews(4, 4)));
+
+			ViewPager menuField = (ViewPager) this
+					.findViewById(R.id.menu_field);
+			menuField.setAdapter(new CellPagerAdapter(menuController
+					.getMenuFieldViews(4)));
+
+			MainActivity.makeToast(this, "All icons are shuffled!!");
 
 			break;
 		}
@@ -174,7 +219,7 @@ public class MainActivity extends Activity {
 	}
 
 	public static void saveGridFieldCurrentItem() {
-		setGridFieldCurrentItem(gridField.getCurrentItem());
+		setGridFieldCurrentItem(mGridField.getCurrentItem());
 	}
 
 	public static void setGridFieldCurrentItem(String groupSelection,

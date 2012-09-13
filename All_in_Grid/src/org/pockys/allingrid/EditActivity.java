@@ -1,9 +1,17 @@
 package org.pockys.allingrid;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,11 +36,14 @@ public class EditActivity extends Activity {
 
 	private EditGridItemClickListener mEditClickListener;
 
+	private static GroupCellInfo currentGroupInfo = MenuController.AllGroupCellInfo;
+
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(LayoutInflater.from(this).inflate(R.layout.main, null));
 
 		ActionBar actionBar = getActionBar();
+		actionBar.setTitle("Edit - All");
 		actionBar.setDisplayHomeAsUpEnabled(true);
 
 		mEditClickListener = new EditGridItemClickListener(this);
@@ -49,7 +60,7 @@ public class EditActivity extends Activity {
 		// app icon in action bar clicked; go home
 		case android.R.id.home:
 
-			EditGridItemClickListener.clear();
+			SelectedItemList.INSTANCE.clear();
 
 			Intent intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -57,33 +68,76 @@ public class EditActivity extends Activity {
 			return true;
 		case R.id.menu_disconnect:
 
-			int selectedPeopleCount = EditGridItemClickListener
-					.getSelectedContactIdListSize();
+			int selectedPeopleCount = SelectedItemList.INSTANCE.getSize();
 
 			if (selectedPeopleCount == 0)
 				return true;
 
-			MainActivity.makeToast(this, "Disconnect " + selectedPeopleCount
-					+ " people from ");
-
 			// disconnect
 
-			// ################################################################
-			EditGridItemClickListener.clear();
-			saveGridFieldCurrentItem();
+			int groupId = currentGroupInfo.getGroupId();
+			String groupTitle = currentGroupInfo.getDisplayName();
 
-			contactController = new ContactController(this, null);
-			contactController.setOnItemClickListener(mEditClickListener);
+			Log.d(TAG, "Group ID: " + groupId);
 
-			gridField = (ViewPager) findViewById(R.id.grid_field);
-			gridField.setAdapter(new CellPagerAdapter(contactController
-					.getGridFieldViews(4, 4)));
-			gridField.setCurrentItem(getGridFieldCurrentItem());
+			ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+			ContentProviderOperation.Builder op;
 
-			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-			circlePageIndicator.setViewPager(gridField);
-			circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
-			// ################################################################
+			Iterator<Integer> contactIdItr = SelectedItemList.INSTANCE
+					.getIterator();
+			for (; contactIdItr.hasNext();) {
+				int contactId = contactIdItr.next();
+
+				if (groupTitle == "All") {
+
+				} else if (groupTitle == "Favorite") {
+					Log.d(TAG, "Favorite. contact Id: " + contactId);
+					op = ContentProviderOperation
+							.newUpdate(ContactsContract.Contacts.CONTENT_URI)
+							.withSelection(
+									ContactsContract.Contacts._ID + " = '"
+											+ contactId + "'", null)
+							.withValue(ContactsContract.Contacts.STARRED, 0);
+					ops.add(op.build());
+
+				} else {
+					op = ContentProviderOperation
+							.newDelete(ContactsContract.Data.CONTENT_URI)
+							.withSelection(
+									ContactsContract.Data.RAW_CONTACT_ID
+											+ " = '"
+											+ EditMenuItemClickListener.getRawContactId(
+													this, contactId)
+											+ "' AND "
+											+ ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+											+ " = '" + groupId + "'", null);
+
+					ops.add(op.build());
+				}
+
+			}
+
+			try {
+				ContentProviderResult[] results = this.getContentResolver()
+						.applyBatch(ContactsContract.AUTHORITY, ops);
+
+				if (results == null) {
+					MainActivity.makeToast(this, "Something was wrong!!");
+				} else {
+
+					MainActivity.makeToast(this, "Disconnect " + results.length
+							+ " people from " + groupTitle);
+				}
+
+			}
+
+			catch (OperationApplicationException e) {
+				e.printStackTrace();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			} finally {
+				resetField();
+			}
 
 			return true;
 		default:
@@ -91,11 +145,29 @@ public class EditActivity extends Activity {
 		}
 	}
 
+	private void resetField() {
+		SelectedItemList.INSTANCE.clear();
+		saveGridFieldCurrentItem();
+
+		contactController = new ContactController(this, null);
+		contactController.setOnItemClickListener(mEditClickListener);
+
+		gridField = (ViewPager) findViewById(R.id.grid_field);
+		gridField.setAdapter(new CellPagerAdapter(contactController
+				.getGridFieldViews(4, 4)));
+		gridField.setCurrentItem(getGridFieldCurrentItem());
+
+		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+		circlePageIndicator.setViewPager(gridField);
+		circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+	}
+
 	public void onResume() {
 		super.onResume();
 
-		menuController = new MenuController(this,
-				new EditMenuItemClickListener(this));
+		menuController = new MenuController(this, false);
+		menuController.setOnItemClickListener(new EditMenuItemClickListener(
+				this));
 		contactController = new ContactController(this, null);
 		contactController.setOnItemClickListener(mEditClickListener);
 
@@ -137,7 +209,7 @@ public class EditActivity extends Activity {
 
 		if (gridField.getCurrentItem() == 0) {
 			super.onBackPressed();
-			EditGridItemClickListener.clear();
+			SelectedItemList.INSTANCE.clear();
 		} else {
 			gridField.setCurrentItem(0);
 		}
@@ -154,6 +226,14 @@ public class EditActivity extends Activity {
 
 	public static void setGridFieldCurrentItem(int gridFieldCurrentItem) {
 		EditActivity.gridFieldCurrentItem = gridFieldCurrentItem;
+	}
+
+	public static GroupCellInfo getCurrentGroupInfo() {
+		return currentGroupInfo;
+	}
+
+	public static void setCurrentGroupInfo(GroupCellInfo currentGroupInfo) {
+		EditActivity.currentGroupInfo = currentGroupInfo;
 	}
 
 }

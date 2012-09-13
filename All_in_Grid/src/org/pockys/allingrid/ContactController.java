@@ -2,16 +2,15 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,12 +28,14 @@ import android.widget.TextView;
 public class ContactController implements OnItemClickListener,
 		OnItemLongClickListener {
 
+	private static final String TAG = "ContactController";
+
 	private Context mContext;
 	private Cursor mContactsCursor;
 	private OnItemClickListener mOnItemClickListener = this;
-	String tab = "Fight";
+	private String tab = "Fight";
 
-	SharedPreferences sharedPreferences;
+	private SharedPreferences sharedPreferences;
 
 	public ContactController(Context context) {
 		this(context, null);
@@ -126,9 +127,11 @@ public class ContactController implements OnItemClickListener,
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(mOnItemClickListener);
+			gridView.setOnItemLongClickListener(this);
 
 			gridViewList.add(gridView);
 		}
+		mContactsCursor.close();
 
 		return gridViewList;
 	}
@@ -156,6 +159,8 @@ public class ContactController implements OnItemClickListener,
 	public boolean onItemLongClick(AdapterView<?> arg0, View view, int arg2,
 			long arg3) {
 
+		Log.d(TAG, "onItemLongClick");
+
 		final View cell = view;
 
 		assert (view.getTag() instanceof ContactCellInfo);
@@ -163,8 +168,7 @@ public class ContactController implements OnItemClickListener,
 
 		final int contactId = contactCellInfo.getContactId();
 
-		final CharSequence[] items = { "Change Icon", "Icon Shaffle",
-				"Profile Edit" };
+		final CharSequence[] items = { "Change Icon", "Edit Profile" };
 
 		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
 		FirstBuilder.setTitle("Pick a color");
@@ -190,16 +194,22 @@ public class ContactController implements OnItemClickListener,
 							IconInfo Samp = IconListLib.INSTANCE
 									.getIconInfo(arg2);
 
-							// SharedPreferences.Editor editor =
-							// sharedPreferences.edit();
-
 							Log.d(tab, "Check! ");
-							// editor.putInt(Integer.toString(contactId), arg2);
-							// editor.commit();
 
 							ImageView imageView = (ImageView) cell
 									.findViewById(R.id.cell_image);
 							imageView.setImageResource(Samp.getImage());
+
+							SharedPreferences.Editor editor = sharedPreferences
+									.edit();
+							editor.putInt(Integer.toString(contactId), arg2);
+							editor.commit();
+
+							// test
+							Intent intent = new Intent(mContext,
+									MainActivity.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							mContext.startActivity(intent);
 
 						}
 
@@ -217,26 +227,13 @@ public class ContactController implements OnItemClickListener,
 
 				else if (arg1 == 1) {
 
-					SharedPreferences.Editor editor = sharedPreferences.edit();
-					editor.clear();
-					editor.commit();
+					Intent intent = new Intent(Intent.ACTION_EDIT);
+					Uri contactUri = Uri.withAppendedPath(
+							ContactsContract.Contacts.CONTENT_URI, ""
+									+ contactId);
+					intent.setData(contactUri);
 
-					MenuController menuController = new MenuController(mContext);
-					ContactController contactController = new ContactController(
-							mContext);
-
-					ViewPager gridField = (ViewPager) ((Activity) mContext)
-							.findViewById(R.id.grid_field);
-					gridField.setAdapter(new CellPagerAdapter(contactController
-							.getGridFieldViews(4, 4)));
-
-					ViewPager menuField = (ViewPager) ((Activity) mContext)
-							.findViewById(R.id.menu_field);
-					menuField.setAdapter(new CellPagerAdapter(menuController
-							.getMenuFieldViews(4)));
-
-					MainActivity
-							.makeToast(mContext, "All icons are shuffled!!");
+					mContext.startActivity(intent);
 
 				}
 
