@@ -106,6 +106,8 @@ public class MainActivity extends Activity {
 	public void onStart() {
 		super.onStart();
 
+		Log.d(TAG, "onStart");
+
 		mMenuController = new MenuController(this);
 		mContactController = new ContactController(this,
 				getSelection(getCurrentGroupInfo()));
@@ -125,6 +127,8 @@ public class MainActivity extends Activity {
 
 	public void onResume() {
 		super.onResume();
+
+		mActionBar.setTitle(currentGroupInfo.getDisplayName());
 
 		mGridField.setCurrentItem(getCurrentItem());
 		mCirclePageIndicator.setCurrentItem(getCurrentItem());

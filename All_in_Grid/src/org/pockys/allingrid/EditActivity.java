@@ -55,7 +55,7 @@ public class EditActivity extends Activity {
 		setContentView(LayoutInflater.from(this).inflate(R.layout.main, null));
 
 		mActionBar = getActionBar();
-		mActionBar.setTitle("Edit - All");
+		// mActionBar.setTitle("Edit - All");
 		mActionBar.setDisplayHomeAsUpEnabled(true);
 
 		currentItemTable = MainActivity.cloneCurrentItemTable();
@@ -63,6 +63,9 @@ public class EditActivity extends Activity {
 
 		mGridField = (ViewPager) findViewById(R.id.grid_field);
 		mMenuField = (ViewPager) findViewById(R.id.menu_field);
+
+		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+		mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
 
 		mEditClickListener = new EditGridItemClickListener(this);
 	}
@@ -74,15 +77,51 @@ public class EditActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		// app icon in action bar clicked; go home
-		case android.R.id.home:
 
+		final Context context = this;
+		AlertDialog.Builder builder;
+
+		switch (item.getItemId()) {
+		case android.R.id.home:
 			SelectedItemList.INSTANCE.clear();
 
-			Intent intent = new Intent(this, MainActivity.class);
-			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			startActivity(intent);
+			// if (currentGroupInfo.getDisplayName() == "All") {
+			builder = new AlertDialog.Builder(this);
+			builder.setTitle("Quit Editing");
+			builder.setPositiveButton("Yes", new OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+
+					Intent intent = new Intent(context, MainActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(intent);
+				}
+			});
+			builder.setNegativeButton("No", null);
+			builder.create().show();
+			// }
+			/*
+			 * else { saveCurrentItem();
+			 * setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+			 * SelectedItemList.INSTANCE
+			 * .setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+			 * EditActivity.reDrawMenuField();
+			 * 
+			 * mActionBar.setTitle("Edit - All");
+			 * 
+			 * mContactController = new ContactController(this, null);
+			 * mContactController.setOnItemClickListener(mEditClickListener);
+			 * 
+			 * mGridField.setAdapter(new CellPagerAdapter(mContactController
+			 * .getGridFieldViews(4, 4)));
+			 * mGridField.setCurrentItem(getCurrentItem());
+			 * 
+			 * mCirclePageIndicator.setViewPager(mGridField);
+			 * mCirclePageIndicator.setCurrentItem(getCurrentItem());
+			 * 
+			 * }
+			 */
 			return true;
 		case R.id.menu_disconnect:
 
@@ -99,7 +138,6 @@ public class EditActivity extends Activity {
 			Log.d(TAG, "Group ID: " + groupId);
 
 			final ContentResolver contentResolver = this.getContentResolver();
-			final Context context = this;
 
 			String dialogTitle;
 			String dialogMessage;
@@ -118,7 +156,7 @@ public class EditActivity extends Activity {
 				positiveButtonMessage = "Yes";
 				negativeButtonMessage = "No";
 			}
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder = new AlertDialog.Builder(this);
 			builder.setTitle(dialogTitle);
 			builder.setMessage(dialogMessage);
 			builder.setNegativeButton(negativeButtonMessage,
@@ -220,6 +258,7 @@ public class EditActivity extends Activity {
 											getSelection(currentGroupInfo));
 									if (mContactController.getSize() == 0) {
 										setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+										setCurrentItem(0);
 										SelectedItemList.INSTANCE
 												.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
 										reDrawMenuField();
@@ -285,7 +324,9 @@ public class EditActivity extends Activity {
 	public void onStart() {
 		super.onStart();
 
-		menuController = new MenuController(this, false);
+		mActionBar.setTitle("Edit - " + currentGroupInfo.getDisplayName());
+
+		menuController = new MenuController(this);
 		menuController.setOnItemClickListener(new EditMenuItemClickListener(
 				this));
 		mContactController = new ContactController(this,
@@ -296,13 +337,11 @@ public class EditActivity extends Activity {
 		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
 
-		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 		mCirclePageIndicator.setViewPager(mGridField);
 
 		mMenuField.setAdapter(new CellPagerAdapter(menuController
 				.getMenuFieldViews(4)));
 
-		mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
 		mLinePageIndicator.setViewPager(mMenuField);
 
 		if (menuFieldCurrentItem == -1) {

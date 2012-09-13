@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,10 +84,13 @@ public class CellAdapter extends BaseAdapter {
 			imageView.setImageResource(Randname);
 
 			if (((Activity) mContext).getClass().equals(EditActivity.class)) {
+
 				if (SelectedItemList.INSTANCE.contain(contactId)) {
 					cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
+
 				} else {
 					cell.setBackgroundColor(Color.TRANSPARENT);
+
 				}
 			}
 		}

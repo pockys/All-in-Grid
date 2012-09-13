@@ -33,14 +33,12 @@ public class ContactController implements OnItemClickListener,
 	private Context mContext;
 	private Cursor mContactsCursor;
 	private OnItemClickListener mOnItemClickListener = this;
-	private String tab = "Fight";
+	// private String tab = "Fight";
 
 	private SharedPreferences sharedPreferences;
 
 	public ContactController(Context context) {
 		this(context, null);
-		// sharedPreferences = context.getSharedPreferences("sharePreferences",
-		// Context.MODE_PRIVATE);
 	}
 
 	public ContactController(Context context, String selection) {
@@ -85,8 +83,6 @@ public class ContactController implements OnItemClickListener,
 
 	private Cursor getContacts(String selection) {
 
-		Uri contactUri = ContactsContract.Data.CONTENT_URI;
-
 		String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
 				ContactsContract.Data.PHOTO_URI,
 				ContactsContract.Data.DISPLAY_NAME, };
@@ -99,8 +95,9 @@ public class ContactController implements OnItemClickListener,
 			selection = "";
 
 		selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
-		return mContext.getContentResolver().query(contactUri, PROJECTION,
-				selection, null, CONTACTS_SORT_ORDER);
+		return mContext.getContentResolver().query(
+				ContactsContract.Data.CONTENT_URI, PROJECTION, selection, null,
+				CONTACTS_SORT_ORDER);
 	}
 
 	public ArrayList<GridView> getGridFieldViews(final int numColumns,
@@ -194,7 +191,7 @@ public class ContactController implements OnItemClickListener,
 							IconInfo Samp = IconListLib.INSTANCE
 									.getIconInfo(arg2);
 
-							Log.d(tab, "Check! ");
+							Log.d(TAG, "Check! ");
 
 							ImageView imageView = (ImageView) cell
 									.findViewById(R.id.cell_image);

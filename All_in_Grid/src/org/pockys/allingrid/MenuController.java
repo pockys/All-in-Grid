@@ -40,20 +40,19 @@ public class MenuController implements OnItemClickListener {
 	private Cursor mGroupTitleCursor;
 	private OnItemClickListener mOnItemClickListener = this;
 
+	// private boolean mOnlyNotEmpty;
+
 	public int getSize() {
 		return mGroupTitleCursor.getCount();
 	}
 
 	public MenuController(Context context) {
-		this(context, true);
-	}
-
-	public MenuController(Context context, boolean onlyNotEmpty) {
 		mContext = context;
-		mGroupTitleCursor = getGroupTitles(onlyNotEmpty);
+		// mOnlyNotEmpty = onlyNotEmpty;
+		mGroupTitleCursor = getGroupTitles();
 	}
 
-	private Cursor getGroupTitles(boolean onlyNotEmpty) {
+	private Cursor getGroupTitles() {
 		final String[] GROUP_PROJECTION = new String[] {
 				ContactsContract.Groups._ID, ContactsContract.Groups.TITLE,
 
@@ -62,10 +61,11 @@ public class MenuController implements OnItemClickListener {
 		String selection = ContactsContract.Groups.TITLE
 				+ " NOT LIKE 'Starred in Android'" + " AND "
 				+ ContactsContract.Groups.ACCOUNT_TYPE + " LIKE 'com.google'";
-		if (onlyNotEmpty) {
-			selection += " AND " + ContactsContract.Groups.SUMMARY_COUNT
-					+ " > 0";
-		}
+		// + " AND " + ContactsContract.Groups.GROUP_VISIBLE + " = '1'";
+		// if (mOnlyNotEmpty) {
+		// selection += " AND " + ContactsContract.Groups.SUMMARY_COUNT
+		// + " > 0";
+		// }
 
 		Cursor cursor = mContext.getContentResolver().query(
 				ContactsContract.Groups.CONTENT_SUMMARY_URI, GROUP_PROJECTION,
@@ -84,7 +84,7 @@ public class MenuController implements OnItemClickListener {
 			return 0;
 		}
 
-		Cursor cursor = getGroupTitles(onlyNotEmpty);
+		Cursor cursor = getGroupTitles();
 		for (int i = 0; cursor.moveToNext(); i++) {
 			if (cursor.getString(
 					cursor.getColumnIndex(ContactsContract.Groups._ID)).equals(
@@ -115,16 +115,41 @@ public class MenuController implements OnItemClickListener {
 			String groupIdString = mGroupTitleCursor
 					.getString(mGroupTitleCursor
 							.getColumnIndex(ContactsContract.Groups._ID));
+			int groupId = Integer.valueOf(groupIdString);
 
 			GroupCellInfo group = new GroupCellInfo();
 			group.setDisplayName(displayName);
 			group.setThumbnail(R.drawable.ic_user_group);
-			group.setGroupId(Integer.valueOf(groupIdString));
+			group.setGroupId(groupId);
 			menuList.add(group);
 		}
 
 		return menuList;
 	}
+
+	// public boolean isEmptyGroup(int groupId) {
+	//
+	// String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
+	// // ContactsContract.Data.PHOTO_URI,
+	// // ContactsContract.Data.DISPLAY_NAME,
+	//
+	// };
+	//
+	// String selection =
+	// // ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+	// ContactsContract.Groups._ID + " = '" + groupId + " '";
+	// selection += " AND " + ContactsContract.Contacts.IN_VISIBLE_GROUP
+	// + " = '1'";
+	// Cursor cursor = mContext.getContentResolver().query(
+	// ContactsContract.Data.CONTENT_URI, null, selection, null,
+	// null);
+	//
+	// int count = cursor.getCount();
+	// cursor.close();
+	//
+	// return (count == 0);
+	//
+	// }
 
 	public ArrayList<GridView> getMenuFieldViews(final int numColumns) {
 		ArrayList<GridView> menuViewList = new ArrayList<GridView>();

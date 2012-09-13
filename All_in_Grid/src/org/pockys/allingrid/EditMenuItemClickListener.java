@@ -47,7 +47,6 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		if (selectedPeopleCount == 0) {
 
 			// set background highlighted
-			view.setBackgroundColor(MenuController.BACKGROUND_COLOR);
 			SelectedItemList.INSTANCE.setSelectedGroupInfo(selectedGroupInfo);
 			EditActivity.reDrawMenuField();
 
@@ -152,31 +151,6 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 			}
 
 		}
-	}
-
-	private void resetField() {
-
-		SelectedItemList.INSTANCE.clear();
-		EditActivity.saveCurrentItem();
-
-		int gridFieldCurrentItem = EditActivity.getCurrentItem();
-
-		ContactController contactController = new ContactController(mContext,
-				null);
-		contactController.setOnItemClickListener(new EditGridItemClickListener(
-				mContext));
-
-		ViewPager gridField = (ViewPager) ((Activity) mContext)
-				.findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(contactController
-				.getGridFieldViews(4, 4)));
-		gridField.setCurrentItem(gridFieldCurrentItem);
-
-		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) ((Activity) mContext)
-				.findViewById(R.id.circle_page_indicator_grid);
-		circlePageIndicator.setViewPager(gridField);
-		circlePageIndicator.setCurrentItem(gridFieldCurrentItem);
-
 	}
 
 	public static int getRawContactId(Context context, int contactId) {
