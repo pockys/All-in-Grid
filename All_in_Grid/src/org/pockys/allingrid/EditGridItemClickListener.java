@@ -17,37 +17,9 @@ public class EditGridItemClickListener implements OnItemClickListener {
 	public static final float ALPHA_VALUE = 0.7f;
 
 	private Context mContext;
-	private static ArrayList<Integer> mSelectedContactIdList = new ArrayList<Integer>();
-
-	public static boolean containContactId(int contactId) {
-		return mSelectedContactIdList.contains(contactId);
-	}
-
-	public static int getSelectedContactIdListSize() {
-		return mSelectedContactIdList.size();
-	}
-
-	public static Iterator<Integer> getSelectedContactIdListIterator() {
-		return mSelectedContactIdList.iterator();
-	}
 
 	public EditGridItemClickListener(Context context) {
 		mContext = context;
-	}
-
-	public static void clear() {
-		mSelectedContactIdList.clear();
-
-		Log.d(TAG, "mSelected ContactId List clear");
-	}
-
-	public void logContactIdList() {
-		String list = "";
-		for (int i = 0; i < mSelectedContactIdList.size(); i++) {
-			list += " " + mSelectedContactIdList.get(i);
-		}
-		Log.d(TAG, "mSelected ContactId List\n" + list);
-
 	}
 
 	@Override
@@ -60,14 +32,14 @@ public class EditGridItemClickListener implements OnItemClickListener {
 
 		ContactCellInfo cellInfo = (ContactCellInfo) view.getTag();
 		int contactId = cellInfo.getContactId();
-		if (mSelectedContactIdList.contains(contactId)) {
+		if (SelectedItemList.INSTANCE.contain(contactId)) {
 			view.setBackgroundColor(Color.TRANSPARENT);
-			mSelectedContactIdList.remove(Integer.valueOf(contactId));
+			SelectedItemList.INSTANCE.remove(contactId);
 		} else {
 			view.setBackgroundColor(BACKGROUND_COLOR);
-			mSelectedContactIdList.add(contactId);
+			SelectedItemList.INSTANCE.add(contactId);
 		}
 
-		logContactIdList();
+		SelectedItemList.INSTANCE.logContactIdList(TAG);
 	}
 }
