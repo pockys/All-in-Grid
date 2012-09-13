@@ -72,6 +72,13 @@ public class ContactController implements OnItemClickListener {
 		String CONTACTS_SORT_ORDER = ContactsContract.Data.DISPLAY_NAME
 				+ " COLLATE LOCALIZED ASC";
 
+//		if (selection != null || selection == "")
+//			selection += " AND ";
+//		else
+//			selection = "";
+//
+//		selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
+
 		return mContext.getContentResolver().query(contactUri, PROJECTION,
 				selection, null, CONTACTS_SORT_ORDER);
 	}

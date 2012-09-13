@@ -32,7 +32,7 @@ public class MenuController implements OnItemClickListener {
 	public MenuController(Context context,
 			OnItemClickListener onItemClickListener) {
 		this(context);
-		mOnItemClickListener = onItemClickListener;
+		setOnItemClickListener(onItemClickListener);
 	}
 
 	public MenuController(Context context) {
@@ -111,7 +111,7 @@ public class MenuController implements OnItemClickListener {
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(mContext, this
 					.getMenuList(numCells)));
-			menuView.setOnItemClickListener(mOnItemClickListener);
+			menuView.setOnItemClickListener(getOnItemClickListener());
 			menuViewList.add(menuView);
 		}
 		if (this.getSize() % numCells != 0) {
@@ -120,7 +120,7 @@ public class MenuController implements OnItemClickListener {
 			menuView.setNumColumns(numColumns);
 			menuView.setAdapter(new CellAdapter(mContext, this
 					.getMenuList(numCells)));
-			menuView.setOnItemClickListener(mOnItemClickListener);
+			menuView.setOnItemClickListener(getOnItemClickListener());
 			menuViewList.add(menuView);
 		}
 
@@ -177,6 +177,14 @@ public class MenuController implements OnItemClickListener {
 		circlePageIndicator.setViewPager(gridField);
 		circlePageIndicator.setCurrentItem(currentItem);
 
+	}
+
+	public OnItemClickListener getOnItemClickListener() {
+		return mOnItemClickListener;
+	}
+
+	public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+		this.mOnItemClickListener = mOnItemClickListener;
 	}
 
 }

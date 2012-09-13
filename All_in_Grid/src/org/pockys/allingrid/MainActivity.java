@@ -143,12 +143,12 @@ public class MainActivity extends Activity {
 			intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
 			startActivity(intent);
 			break;
-//		case R.id.menu_icon:
-//
-//			break;
-//		case R.id.menu_search:
-//
-//			break;
+		// case R.id.menu_icon:
+		//
+		// break;
+		// case R.id.menu_search:
+		//
+		// break;
 		case R.id.menu_edit:
 			intent = new Intent(this, EditActivity.class);
 			startActivity(intent);

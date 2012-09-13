@@ -17,13 +17,13 @@ public class EditActivity extends Activity {
 
 	public static final String TAG = "EditActivity";
 
-	private ViewPager gridField;
+	private static ViewPager gridField;
 	private ViewPager menuField;
 
 	private MenuController menuController;
 	private ContactController contactController;
 
-	private int gridFieldCurrentItem = 0;
+	private static int gridFieldCurrentItem = 0;
 	private int menuFieldCurrentItem = 0;
 
 	private EditGridItemClickListener mEditClickListener;
@@ -49,14 +49,41 @@ public class EditActivity extends Activity {
 		// app icon in action bar clicked; go home
 		case android.R.id.home:
 
-			mEditClickListener.clear();
+			EditGridItemClickListener.clear();
 
 			Intent intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 			return true;
 		case R.id.menu_disconnect:
-			MainActivity.makeToast(this, "DISCONNECT");
+
+			int selectedPeopleCount = EditGridItemClickListener
+					.getSelectedContactIdListSize();
+
+			if (selectedPeopleCount == 0)
+				return true;
+
+			MainActivity.makeToast(this, "Disconnect " + selectedPeopleCount
+					+ " people from ");
+
+			// disconnect
+
+			// ################################################################
+			EditGridItemClickListener.clear();
+			saveGridFieldCurrentItem();
+
+			contactController = new ContactController(this, null);
+			contactController.setOnItemClickListener(mEditClickListener);
+
+			gridField = (ViewPager) findViewById(R.id.grid_field);
+			gridField.setAdapter(new CellPagerAdapter(contactController
+					.getGridFieldViews(4, 4)));
+			gridField.setCurrentItem(getGridFieldCurrentItem());
+
+			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+			circlePageIndicator.setViewPager(gridField);
+			circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
+			// ################################################################
 
 			return true;
 		default:
@@ -67,18 +94,19 @@ public class EditActivity extends Activity {
 	public void onResume() {
 		super.onResume();
 
-		menuController = new MenuController(this, null);
+		menuController = new MenuController(this,
+				new EditMenuItemClickListener(this));
 		contactController = new ContactController(this, null);
 		contactController.setOnItemClickListener(mEditClickListener);
 
 		gridField = (ViewPager) findViewById(R.id.grid_field);
 		gridField.setAdapter(new CellPagerAdapter(contactController
 				.getGridFieldViews(4, 4)));
-		gridField.setCurrentItem(gridFieldCurrentItem);
+		gridField.setCurrentItem(getGridFieldCurrentItem());
 
 		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 		circlePageIndicator.setViewPager(gridField);
-		circlePageIndicator.setCurrentItem(gridFieldCurrentItem);
+		circlePageIndicator.setCurrentItem(getGridFieldCurrentItem());
 
 		menuField = (ViewPager) findViewById(R.id.menu_field);
 		menuField.setAdapter(new CellPagerAdapter(menuController
@@ -96,7 +124,7 @@ public class EditActivity extends Activity {
 	public void onPause() {
 		super.onPause();
 
-		gridFieldCurrentItem = gridField.getCurrentItem();
+		saveGridFieldCurrentItem();
 		menuFieldCurrentItem = menuField.getCurrentItem();
 
 	}
@@ -109,11 +137,23 @@ public class EditActivity extends Activity {
 
 		if (gridField.getCurrentItem() == 0) {
 			super.onBackPressed();
-			mEditClickListener.clear();
+			EditGridItemClickListener.clear();
 		} else {
 			gridField.setCurrentItem(0);
 		}
 
+	}
+
+	public static void saveGridFieldCurrentItem() {
+		setGridFieldCurrentItem(gridField.getCurrentItem());
+	}
+
+	public static int getGridFieldCurrentItem() {
+		return gridFieldCurrentItem;
+	}
+
+	public static void setGridFieldCurrentItem(int gridFieldCurrentItem) {
+		EditActivity.gridFieldCurrentItem = gridFieldCurrentItem;
 	}
 
 }

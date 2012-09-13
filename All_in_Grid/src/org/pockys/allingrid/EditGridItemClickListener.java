@@ -1,6 +1,7 @@
 package org.pockys.allingrid;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -23,11 +24,19 @@ public class EditGridItemClickListener implements OnItemClickListener {
 		return mSelectedContactIdList.contains(contactId);
 	}
 
+	public static int getSelectedContactIdListSize() {
+		return mSelectedContactIdList.size();
+	}
+	
+	public static Iterator<Integer> getSelectedContactIdListIterator() {
+		return mSelectedContactIdList.iterator();
+	}
+
 	public EditGridItemClickListener(Context context) {
 		mContext = context;
 	}
 
-	public void clear() {
+	public static void clear() {
 		mSelectedContactIdList.clear();
 
 		Log.d(TAG, "mSelected ContactId List clear");
@@ -46,28 +55,17 @@ public class EditGridItemClickListener implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
 
-		ImageView imageView = (ImageView) view.findViewById(R.id.cell_image);
+		// ImageView imageView = (ImageView) view.findViewById(R.id.cell_image);
 
 		assert (view.getTag() instanceof ContactCellInfo) : "cellInfo is not instance of contact cellInfo!!";
 
 		ContactCellInfo cellInfo = (ContactCellInfo) view.getTag();
 		int contactId = cellInfo.getContactId();
 		if (mSelectedContactIdList.contains(contactId)) {
-			// imageView.setAlpha(1.0f);
-			// imageView.setBackgroundColor(Color.TRANSPARENT);
-
 			view.setBackgroundColor(Color.TRANSPARENT);
-
 			mSelectedContactIdList.remove(Integer.valueOf(contactId));
-
 		} else {
-
-			// imageView.setAlpha(ALPHA_VALUE);
-			// imageView.setBackgroundColor(BACKGROUND_COLOR);
-
-			// view.setAlpha(ALPHA_VALUE);
 			view.setBackgroundColor(BACKGROUND_COLOR);
-
 			mSelectedContactIdList.add(contactId);
 		}
 
