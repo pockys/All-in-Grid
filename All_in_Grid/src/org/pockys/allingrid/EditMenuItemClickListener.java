@@ -6,11 +6,9 @@ import java.util.Iterator;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
@@ -94,44 +92,9 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		try {
 			ContentProviderResult[] results = mContext.getContentResolver()
 					.applyBatch(ContactsContract.AUTHORITY, ops);
+		}
 
-			// for debug ******************
-			Iterator<Integer> it = EditGridItemClickListener
-					.getSelectedContactIdListIterator();
-			for (; it.hasNext();) {
-
-				int contactId = it.next();
-				String[] selection = new String[] {
-						ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
-						ContactsContract.Data.RAW_CONTACT_ID,
-						ContactsContract.Data._ID };
-				String where = ContactsContract.Data.CONTACT_ID + " = "
-						+ contactId;
-				Cursor cursor = mContext.getContentResolver().query(
-						ContactsContract.Data.CONTENT_URI, selection, where,
-						null, null);
-
-				for (; cursor.moveToNext();) {
-					String groupIdString = cursor
-							.getString(cursor
-									.getColumnIndex(ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID));
-					String rawContactIdString = cursor
-							.getString(cursor
-									.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID));
-					String idString = cursor.getString(cursor
-							.getColumnIndex(ContactsContract.Data._ID));
-					Log.d(TAG, "Contact Id: " + contactId + " Group Id: "
-							+ groupIdString + " raw Contact Id: "
-							+ rawContactIdString + " id: " + idString);
-<<<<<<< HEAD
-
-=======
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
-				}
-			}
-			// for debug ******************
-
-		} catch (OperationApplicationException e) {
+		catch (OperationApplicationException e) {
 			e.printStackTrace();
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -182,30 +145,4 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		return -1;
 	}
 
-	private int getFavoriteGroupId() {
-
-		// Starred in Android
-
-		String[] selection = new String[] { ContactsContract.Groups._ID };
-		String where = ContactsContract.Groups.TITLE
-				+ "LIKE 'Starred in Android'";
-		Cursor cursor = mContext.getContentResolver()
-				.query(ContactsContract.Data.CONTENT_URI, selection, where,
-						null, null);
-		for (; cursor.moveToNext();) {
-			String favoriteGroupIdString = cursor.getString(cursor
-					.getColumnIndex(ContactsContract.Groups._ID));
-			if (favoriteGroupIdString != null) {
-				cursor.close();
-				return Integer.parseInt(favoriteGroupIdString);
-			}
-		}
-
-		cursor.close();
-		return -1;
-	}
-<<<<<<< HEAD
-
-=======
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 }
