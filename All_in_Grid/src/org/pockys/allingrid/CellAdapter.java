@@ -14,12 +14,12 @@ import android.widget.TextView;
 
 public class CellAdapter extends BaseAdapter {
 
-	static final String TAG = "ContactAdapter";
+	private static final String TAG = "ContactAdapter";
 
 	private Context mContext;
 	private LayoutInflater layoutInflater;
 
-	SharedPreferences sharedPreferences;
+	private SharedPreferences sharedPreferences;
 
 	ArrayList<Integer> iconList = new ArrayList<Integer>();
 
@@ -30,31 +30,6 @@ public class CellAdapter extends BaseAdapter {
 
 		sharedPreferences = _context.getSharedPreferences("sharePreferences",
 				Context.MODE_PRIVATE);
-
-		iconList.add(R.drawable.ic_action_search);
-		iconList.add(R.drawable.ic_launcher);
-		iconList.add(R.drawable.ic_menu_edit);
-		iconList.add(R.drawable.ic_menu_phone);
-		iconList.add(R.drawable.ic_menu_phone_ring);
-		iconList.add(R.drawable.ic_menu_search);
-		iconList.add(R.drawable.ic_menu_sort);
-		iconList.add(R.drawable.ic_gotouti_001);
-		iconList.add(R.drawable.ic_gotouti_002);
-		iconList.add(R.drawable.ic_gotouti_003);
-		iconList.add(R.drawable.ic_gotouti_004);
-		iconList.add(R.drawable.ic_gotouti_005);
-		iconList.add(R.drawable.ic_gotouti_006);
-		iconList.add(R.drawable.ic_gotouti_007);
-		iconList.add(R.drawable.ic_gotouti_008);
-		iconList.add(R.drawable.ic_tizukigou_001);
-		iconList.add(R.drawable.ic_tizukigou_002);
-		iconList.add(R.drawable.ic_tizukigou_003);
-		iconList.add(R.drawable.ic_tizukigou_004);
-		iconList.add(R.drawable.ic_tizukigou_005);
-		iconList.add(R.drawable.ic_tizukigou_006);
-		iconList.add(R.drawable.ic_tizukigou_007);
-		iconList.add(R.drawable.ic_tizukigou_008);
-		int iconListSize = iconList.size();
 
 		mContext = _context;
 		layoutInflater = LayoutInflater.from(mContext);
@@ -91,20 +66,21 @@ public class CellAdapter extends BaseAdapter {
 
 			int contactId = ((ContactCellInfo) cellInfo).getContactId();
 
-			int rand = sharedPreferences.getInt(Integer.toString(contactId), 0);
-			if (rand == 0) {
+			int rand = sharedPreferences
+					.getInt(Integer.toString(contactId), -1);
+			if (rand == -1) {
 
 				SharedPreferences.Editor editor = sharedPreferences.edit();
-				rand = (int) (Math.random() * iconList.size());
+				rand = (int) (Math.random() * IconListLib.INSTANCE
+						.getIconInfoSize());
 				editor.putInt(Integer.toString(contactId), rand);
 				editor.commit();
 			}
-
-			int randomname = iconList.get(rand);
+			IconInfo randomname = IconListLib.INSTANCE.getIconInfo(rand);
+			int Randname = randomname.getImage();
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
-			cellInfo.setThumbnail(randomname);
-			imageView.setImageResource(randomname);
+			imageView.setImageResource(Randname);
 
 			if (((Activity) mContext).getClass().equals(EditActivity.class)
 					&& EditGridItemClickListener.containContactId(contactId)) {

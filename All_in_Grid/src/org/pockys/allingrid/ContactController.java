@@ -2,31 +2,51 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.QuickContactBadge;
+import android.widget.TextView;
 
-public class ContactController implements OnItemClickListener {
+public class ContactController implements OnItemClickListener,
+		OnItemLongClickListener {
 
 	private Context mContext;
 	private Cursor mContactsCursor;
 	private OnItemClickListener mOnItemClickListener = this;
+	String tab = "Fight";
+
+	SharedPreferences sharedPreferences;
 
 	public ContactController(Context context) {
 		this(context, null);
+//		sharedPreferences = context.getSharedPreferences("sharePreferences",
+//				Context.MODE_PRIVATE);
 	}
 
 	public ContactController(Context context, String selection) {
 		mContext = context;
 		mContactsCursor = getContacts(selection);
+		sharedPreferences = context.getSharedPreferences("sharePreferences",
+				Context.MODE_PRIVATE);
 	}
 
 	public int getSize() {
@@ -72,12 +92,12 @@ public class ContactController implements OnItemClickListener {
 		String CONTACTS_SORT_ORDER = ContactsContract.Data.DISPLAY_NAME
 				+ " COLLATE LOCALIZED ASC";
 
-//		if (selection != null || selection == "")
-//			selection += " AND ";
-//		else
-//			selection = "";
-//
-//		selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
+		// if (selection != null || selection == "")
+		// selection += " AND ";
+		// else
+		// selection = "";
+		//
+		// selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
 
 		return mContext.getContentResolver().query(contactUri, PROJECTION,
 				selection, null, CONTACTS_SORT_ORDER);
@@ -96,6 +116,7 @@ public class ContactController implements OnItemClickListener {
 			gridView.setAdapter(new CellAdapter(mContext, this
 					.getContactsList(numCells)));
 			gridView.setOnItemClickListener(mOnItemClickListener);
+			gridView.setOnItemLongClickListener(this);
 
 			gridViewList.add(gridView);
 		}
@@ -132,12 +153,158 @@ public class ContactController implements OnItemClickListener {
 
 	}
 
-	public OnItemClickListener getOnItemClickListener() {
-		return mOnItemClickListener;
+	@Override
+	public boolean onItemLongClick(AdapterView<?> arg0, View view, int arg2,
+			long arg3) {
+
+		final View cell = view;
+
+		assert (view.getTag() instanceof ContactCellInfo);
+		ContactCellInfo contactCellInfo = (ContactCellInfo) view.getTag();
+
+		final int contactId = contactCellInfo.getContactId();
+
+		final CharSequence[] items = { "Change Icon", "Icon Shaffle",
+				"Profile Edit" };
+
+		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
+		FirstBuilder.setTitle("Pick a color");
+		OnClickListener listner = new OnClickListener() {
+
+			@Override
+			public void onClick(final DialogInterface dia, int arg1) {
+				if (arg1 == 0) {
+					CustomAdapter adp = new CustomAdapter(mContext,
+							R.layout.row);
+
+					LayoutInflater inflater = LayoutInflater.from(mContext);
+					ListView lv = (ListView) inflater.inflate(
+							R.layout.listview, null);
+
+					lv.setAdapter(adp);
+					lv.setOnItemClickListener(new OnItemClickListener() {
+
+						@Override
+						public void onItemClick(AdapterView<?> v, View arg1,
+								int arg2, long arg3) {
+							 
+
+							IconInfo Samp = IconListLib.INSTANCE
+									.getIconInfo(arg2);
+							
+							//SharedPreferences.Editor editor = sharedPreferences.edit();
+
+							Log.d(tab, "Check! ");
+							//editor.putInt(Integer.toString(contactId), arg2);
+							//editor.commit();
+
+							ImageView imageView = (ImageView) cell
+									.findViewById(R.id.cell_image);
+							imageView.setImageResource(Samp.getImage());
+
+						}
+
+					});
+
+					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+							mContext);
+
+					alertDialogBuilder.setTitle("Change Icon");
+					alertDialogBuilder.setView(lv);
+
+					alertDialogBuilder.create().show();
+
+				}
+
+				else if (arg1 == 1) {
+
+					SharedPreferences.Editor editor = sharedPreferences.edit();
+					editor.clear();
+					editor.commit();
+
+					MenuController menuController = new MenuController(mContext);
+					ContactController contactController = new ContactController(
+							mContext);
+
+					ViewPager gridField = (ViewPager) ((Activity) mContext)
+							.findViewById(R.id.grid_field);
+					gridField.setAdapter(new CellPagerAdapter(contactController
+							.getGridFieldViews(4, 4)));
+
+					ViewPager menuField = (ViewPager) ((Activity) mContext)
+							.findViewById(R.id.menu_field);
+					menuField.setAdapter(new CellPagerAdapter(menuController
+							.getMenuFieldViews(4)));
+
+					MainActivity
+							.makeToast(mContext, "All icons are shuffled!!");
+
+				}
+
+			}
+
+		};
+		FirstBuilder.setItems(items, listner);
+		FirstBuilder.create().show();
+
+		return false;
+
 	}
 
-	public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
-		this.mOnItemClickListener = mOnItemClickListener;
+	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+		mOnItemClickListener = onItemClickListener;
+	}
+}
+
+class CustomAdapter extends BaseAdapter {
+
+	LayoutInflater mLayoutInflater;
+	Context context;
+	String tag = "test";
+
+	public CustomAdapter(Context _context, int resource) {
+		super();
+		context = _context;
+	}
+
+	@Override
+	public View getView(int position, View v, ViewGroup parent) {
+
+		mLayoutInflater = LayoutInflater.from(context);
+		if (v == null)
+			v = mLayoutInflater.inflate(R.layout.row, parent, false);
+
+		IconInfo icon = (IconInfo) getItem(position);
+
+		TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
+		countrycode.setText(icon.getName());
+
+		TextView countryname = (TextView) v.findViewById(R.id.countryname);
+		countryname.setText(icon.getInfo());
+
+		ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
+		app_icon.setImageResource(icon.getImage());
+
+		return v;
+
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return IconListLib.INSTANCE.getIconInfoSize();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		// TODO Auto-generated method stub
+		return IconListLib.INSTANCE.getIconInfo(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

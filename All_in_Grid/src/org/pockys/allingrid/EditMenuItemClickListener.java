@@ -3,8 +3,6 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import android.accounts.AccountManager;
-import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;

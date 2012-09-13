@@ -27,7 +27,7 @@ public class EditGridItemClickListener implements OnItemClickListener {
 	public static int getSelectedContactIdListSize() {
 		return mSelectedContactIdList.size();
 	}
-	
+
 	public static Iterator<Integer> getSelectedContactIdListIterator() {
 		return mSelectedContactIdList.iterator();
 	}
