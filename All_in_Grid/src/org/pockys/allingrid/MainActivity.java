@@ -18,6 +18,8 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.Toast;
 
 import com.viewpagerindicator.CirclePageIndicator;
@@ -27,7 +29,9 @@ public class MainActivity extends Activity {
 
 	static final String TAG = "MainActivity";
 	private static ViewPager mGridField;
-	private ViewPager mMenuField;
+	private static ViewPager mMenuField;
+
+	private ActionBar mActionBar;
 
 	private int menuFieldCurrentItem = 0;
 
@@ -90,9 +94,12 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		ActionBar actionBar = getActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(false);
-		actionBar.show();
+		mActionBar = getActionBar();
+		mActionBar.setDisplayHomeAsUpEnabled(false);
+		mActionBar.show();
+
+		mGridField = (ViewPager) findViewById(R.id.grid_field);
+		mMenuField = (ViewPager) findViewById(R.id.menu_field);
 
 	}
 
@@ -103,14 +110,12 @@ public class MainActivity extends Activity {
 		mContactController = new ContactController(this,
 				getSelection(getCurrentGroupInfo()));
 
-		mGridField = (ViewPager) findViewById(R.id.grid_field);
 		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
 
 		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 		mCirclePageIndicator.setViewPager(mGridField);
 
-		mMenuField = (ViewPager) findViewById(R.id.menu_field);
 		mMenuField.setAdapter(new CellPagerAdapter(mMenuController
 				.getMenuFieldViews(4)));
 
@@ -129,6 +134,8 @@ public class MainActivity extends Activity {
 		Log.d(TAG, "onResume: gridField currentGroup: "
 				+ getCurrentGroupInfo().getDisplayName() + " currentItem: "
 				+ getCurrentItem());
+
+		SelectedItemList.INSTANCE.setSelectedGroupInfo(currentGroupInfo);
 
 	}
 
@@ -151,9 +158,9 @@ public class MainActivity extends Activity {
 				"onBackPressed Called. gridField currentItem: "
 						+ mGridField.getCurrentItem());
 
-		final String groupSelection = getSelection(currentGroupInfo);
+		String currentGroupTitle = currentGroupInfo.getDisplayName();
 
-		if (groupSelection == null && mGridField.getCurrentItem() == 0) {
+		if (currentGroupTitle == "All" && mGridField.getCurrentItem() == 0) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle("Do you want to quit?");
 			builder.setPositiveButton("Yes", new OnClickListener() {
@@ -166,21 +173,24 @@ public class MainActivity extends Activity {
 			builder.setNegativeButton("No", null);
 			builder.create().show();
 
-		} else if (groupSelection != null && mGridField.getCurrentItem() == 0) {
+		} else if (currentGroupTitle != "All"
+				&& mGridField.getCurrentItem() == 0) {
 			setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+			SelectedItemList.INSTANCE
+					.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+			reDrawMenuField();
 
-			getActionBar().setDisplayHomeAsUpEnabled(false);
+			mActionBar.setDisplayHomeAsUpEnabled(false);
+			mActionBar.setTitle("All");
 
 			mContactController = new ContactController(this, null);
-			mGridField = (ViewPager) findViewById(R.id.grid_field);
 			mGridField.setAdapter(new CellPagerAdapter(mContactController
 					.getGridFieldViews(4, 4)));
 			mGridField.setCurrentItem(getCurrentItem());
 
-			mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 			mCirclePageIndicator.setViewPager(mGridField);
 			mCirclePageIndicator.setCurrentItem(getCurrentItem());
-			getActionBar().setTitle("All");
+
 		} else {
 
 			setCurrentItem(0);
@@ -269,6 +279,23 @@ public class MainActivity extends Activity {
 
 	public static void makeToast(Context context, String message) {
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+	}
+
+	public static void reDrawGridField() {
+		for (int i = 0; i < mGridField.getChildCount(); i++) {
+			GridView currentGridView = (GridView) mGridField.getChildAt(i);
+			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
+			adapter.notifyDataSetChanged();
+
+		}
+	}
+
+	public static void reDrawMenuField() {
+		for (int i = 0; i < mMenuField.getChildCount(); i++) {
+			GridView currentGridView = (GridView) mMenuField.getChildAt(i);
+			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
+			adapter.notifyDataSetChanged();
+		}
 	}
 
 }

@@ -250,6 +250,7 @@ public class ContactController implements OnItemClickListener,
 	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
 		mOnItemClickListener = onItemClickListener;
 	}
+
 }
 
 class CustomAdapter extends BaseAdapter {

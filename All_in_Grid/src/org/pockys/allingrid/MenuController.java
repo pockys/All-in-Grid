@@ -20,7 +20,8 @@ import com.viewpagerindicator.CirclePageIndicator;
 
 public class MenuController implements OnItemClickListener {
 
-	private static final String TAG = "MainMenu";
+	private static final String TAG = "MenuController";
+	public static final int BACKGROUND_COLOR = Color.rgb(255, 200, 102);
 
 	public static final GroupCellInfo AllGroupCellInfo;
 	public static final GroupCellInfo FavoriteGroupCellInfo;
@@ -154,13 +155,15 @@ public class MenuController implements OnItemClickListener {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
 
-		// v.setBackgroundColor(Color.RED);
-
 		ViewPager gridField = (ViewPager) ((Activity) mContext)
 				.findViewById(R.id.grid_field);
 
 		GroupCellInfo selectedGroupInfo = (GroupCellInfo) v.getTag();
 		String selectedGroupTitle = selectedGroupInfo.getDisplayName();
+
+		v.setBackgroundColor(BACKGROUND_COLOR);
+		SelectedItemList.INSTANCE.setSelectedGroupInfo(selectedGroupInfo);
+		MainActivity.reDrawMenuField();
 
 		GroupCellInfo currentGroupInfo = MainActivity.getCurrentGroupInfo();
 		Log.d(TAG, "current group: "
@@ -199,7 +202,6 @@ public class MenuController implements OnItemClickListener {
 
 		Log.d(TAG, "clicked group: " + selectedGroupInfo.getDisplayName()
 				+ " current item: " + MainActivity.getCurrentItem());
-
 	}
 
 	public OnItemClickListener getOnItemClickListener() {

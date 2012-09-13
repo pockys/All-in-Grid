@@ -6,8 +6,13 @@ import java.util.Iterator;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.os.Bundle;
@@ -18,6 +23,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
 
 import com.viewpagerindicator.CirclePageIndicator;
 import com.viewpagerindicator.LinePageIndicator;
@@ -27,10 +34,12 @@ public class EditActivity extends Activity {
 	public static final String TAG = "EditActivity";
 
 	private static ViewPager mGridField;
-	private ViewPager menuField;
+	private static ViewPager mMenuField;
+
+	private ActionBar mActionBar;
 
 	private MenuController menuController;
-	private ContactController contactController;
+	private ContactController mContactController;
 
 	private int menuFieldCurrentItem = -1;
 
@@ -45,12 +54,15 @@ public class EditActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(LayoutInflater.from(this).inflate(R.layout.main, null));
 
-		ActionBar actionBar = getActionBar();
-		actionBar.setTitle("Edit - All");
-		actionBar.setDisplayHomeAsUpEnabled(true);
+		mActionBar = getActionBar();
+		mActionBar.setTitle("Edit - All");
+		mActionBar.setDisplayHomeAsUpEnabled(true);
 
 		currentItemTable = MainActivity.cloneCurrentItemTable();
 		currentGroupInfo = MainActivity.getCurrentGroupInfo();
+
+		mGridField = (ViewPager) findViewById(R.id.grid_field);
+		mMenuField = (ViewPager) findViewById(R.id.menu_field);
 
 		mEditClickListener = new EditGridItemClickListener(this);
 	}
@@ -81,69 +93,163 @@ public class EditActivity extends Activity {
 
 			// disconnect
 
-			int groupId = currentGroupInfo.getGroupId();
-			String groupTitle = currentGroupInfo.getDisplayName();
+			final int groupId = currentGroupInfo.getGroupId();
+			final String groupTitle = currentGroupInfo.getDisplayName();
 
 			Log.d(TAG, "Group ID: " + groupId);
 
-			ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-			ContentProviderOperation.Builder op;
+			final ContentResolver contentResolver = this.getContentResolver();
+			final Context context = this;
 
-			Iterator<Integer> contactIdItr = SelectedItemList.INSTANCE
-					.getIterator();
-			for (; contactIdItr.hasNext();) {
-				int contactId = contactIdItr.next();
+			String dialogTitle;
+			String dialogMessage;
+			String positiveButtonMessage;
+			String negativeButtonMessage;
 
-				if (groupTitle == "All") {
-
-				} else if (groupTitle == "Favorite") {
-					Log.d(TAG, "Favorite. contact Id: " + contactId);
-					op = ContentProviderOperation
-							.newUpdate(ContactsContract.Contacts.CONTENT_URI)
-							.withSelection(
-									ContactsContract.Contacts._ID + " = '"
-											+ contactId + "'", null)
-							.withValue(ContactsContract.Contacts.STARRED, 0);
-					ops.add(op.build());
-
-				} else {
-					op = ContentProviderOperation
-							.newDelete(ContactsContract.Data.CONTENT_URI)
-							.withSelection(
-									ContactsContract.Data.RAW_CONTACT_ID
-											+ " = '"
-											+ EditMenuItemClickListener.getRawContactId(
-													this, contactId)
-											+ "' AND "
-											+ ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-											+ " = '" + groupId + "'", null);
-
-					ops.add(op.build());
-				}
-
+			if (groupTitle == "All") {
+				dialogTitle = "Disconnect from all groups";
+				dialogMessage = "ARE YOU SERIOUS??";
+				positiveButtonMessage = "Uh-huh";
+				negativeButtonMessage = "Oops, I missed!!";
+			} else {
+				dialogTitle = "Disconnect - " + groupTitle;
+				dialogMessage = selectedPeopleCount
+						+ " people will be disconnected";
+				positiveButtonMessage = "Yes";
+				negativeButtonMessage = "No";
 			}
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(dialogTitle);
+			builder.setMessage(dialogMessage);
+			builder.setNegativeButton(negativeButtonMessage,
+					new OnClickListener() {
 
-			try {
-				ContentProviderResult[] results = this.getContentResolver()
-						.applyBatch(ContactsContract.AUTHORITY, ops);
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							SelectedItemList.INSTANCE.clear();
+							reDrawGridField();
 
-				if (results == null) {
-					MainActivity.makeToast(this, "Something was wrong!!");
-				} else {
+						}
+					});
+			builder.setPositiveButton(positiveButtonMessage,
+					new OnClickListener() {
 
-					MainActivity.makeToast(this, "Disconnect " + results.length
-							+ " people from " + groupTitle);
-				}
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							Log.d(TAG, "Yes");
 
-			}
+							ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+							ContentProviderOperation.Builder op;
 
-			catch (OperationApplicationException e) {
-				e.printStackTrace();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			} finally {
-				resetField();
-			}
+							Iterator<Integer> contactIdItr = SelectedItemList.INSTANCE
+									.getIterator();
+							for (; contactIdItr.hasNext();) {
+								int contactId = contactIdItr.next();
+
+								if (groupTitle == "All") {
+
+								} else if (groupTitle == "Favorite") {
+									Log.d(TAG, "Favorite. contact Id: "
+											+ contactId);
+									op = ContentProviderOperation
+											.newUpdate(
+													ContactsContract.Contacts.CONTENT_URI)
+											.withSelection(
+													ContactsContract.Contacts._ID
+															+ " = '"
+															+ contactId + "'",
+													null)
+											.withValue(
+													ContactsContract.Contacts.STARRED,
+													0);
+									ops.add(op.build());
+
+								} else {
+									op = ContentProviderOperation
+											.newDelete(
+													ContactsContract.Data.CONTENT_URI)
+											.withSelection(
+													ContactsContract.Data.RAW_CONTACT_ID
+															+ " = '"
+															+ EditMenuItemClickListener
+																	.getRawContactId(
+																			context,
+																			contactId)
+															+ "' AND "
+															+ ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
+															+ " = '"
+															+ groupId
+															+ "'", null);
+
+									ops.add(op.build());
+								}
+
+							}
+
+							try {
+								ContentProviderResult[] results = contentResolver
+										.applyBatch(ContactsContract.AUTHORITY,
+												ops);
+
+								if (results == null) {
+									MainActivity.makeToast(context,
+											"Something was wrong!!");
+								} else if (results.length > 0) {
+
+									MainActivity.makeToast(context,
+											"Disconnect " + results.length
+													+ " people from "
+													+ groupTitle);
+								}
+
+							}
+
+							catch (OperationApplicationException e) {
+								e.printStackTrace();
+							} catch (RemoteException e) {
+								e.printStackTrace();
+							} finally {
+								SelectedItemList.INSTANCE.clear();
+								saveCurrentItem();
+
+								if (currentGroupInfo.getDisplayName() == "All") {
+									reDrawGridField();
+								} else {
+									mContactController = new ContactController(
+											context,
+											getSelection(currentGroupInfo));
+									if (mContactController.getSize() == 0) {
+										setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+										SelectedItemList.INSTANCE
+												.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+										reDrawMenuField();
+
+										mContactController = new ContactController(
+												context, null);
+
+									}
+
+									mContactController
+											.setOnItemClickListener(mEditClickListener);
+
+									mGridField.setAdapter(new CellPagerAdapter(
+											mContactController
+													.getGridFieldViews(4, 4)));
+									mGridField.setCurrentItem(getCurrentItem());
+
+									CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
+									circlePageIndicator
+											.setViewPager(mGridField);
+									circlePageIndicator
+											.setCurrentItem(getCurrentItem());
+								}
+
+							}
+
+						}
+					});
+
+			builder.create().show();
 
 			return true;
 		default:
@@ -155,11 +261,19 @@ public class EditActivity extends Activity {
 		SelectedItemList.INSTANCE.clear();
 		saveCurrentItem();
 
-		contactController = new ContactController(this, null);
-		contactController.setOnItemClickListener(mEditClickListener);
+		mContactController = new ContactController(this,
+				MainActivity.getSelection(currentGroupInfo));
+		if (currentGroupInfo.getDisplayName() != "All"
+				&& mContactController.getSize() == 0) {
+			setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+			SelectedItemList.INSTANCE
+					.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+			reDrawMenuField();
+			mContactController = new ContactController(this, null);
+		}
+		mContactController.setOnItemClickListener(mEditClickListener);
 
-		mGridField = (ViewPager) findViewById(R.id.grid_field);
-		mGridField.setAdapter(new CellPagerAdapter(contactController
+		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
 		mGridField.setCurrentItem(getCurrentItem());
 
@@ -174,22 +288,22 @@ public class EditActivity extends Activity {
 		menuController = new MenuController(this, false);
 		menuController.setOnItemClickListener(new EditMenuItemClickListener(
 				this));
-		contactController = new ContactController(this,
+		mContactController = new ContactController(this,
 				MainActivity.getSelection(currentGroupInfo));
-		contactController.setOnItemClickListener(mEditClickListener);
+		mContactController.setOnItemClickListener(mEditClickListener);
 
 		mGridField = (ViewPager) findViewById(R.id.grid_field);
-		mGridField.setAdapter(new CellPagerAdapter(contactController
+		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
 
 		mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
 		mCirclePageIndicator.setViewPager(mGridField);
-		menuField = (ViewPager) findViewById(R.id.menu_field);
-		menuField.setAdapter(new CellPagerAdapter(menuController
+
+		mMenuField.setAdapter(new CellPagerAdapter(menuController
 				.getMenuFieldViews(4)));
 
 		mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
-		mLinePageIndicator.setViewPager(menuField);
+		mLinePageIndicator.setViewPager(mMenuField);
 
 		if (menuFieldCurrentItem == -1) {
 			menuFieldCurrentItem = menuController.getPagedCount(4,
@@ -208,7 +322,8 @@ public class EditActivity extends Activity {
 
 		mGridField.setCurrentItem(getCurrentItem());
 		mCirclePageIndicator.setCurrentItem(getCurrentItem());
-		menuField.setCurrentItem(menuFieldCurrentItem);
+
+		mMenuField.setCurrentItem(menuFieldCurrentItem);
 		mLinePageIndicator.setCurrentItem(menuFieldCurrentItem);
 
 	}
@@ -218,7 +333,7 @@ public class EditActivity extends Activity {
 		super.onPause();
 
 		saveCurrentItem();
-		menuFieldCurrentItem = menuField.getCurrentItem();
+		menuFieldCurrentItem = mMenuField.getCurrentItem();
 
 	}
 
@@ -228,26 +343,56 @@ public class EditActivity extends Activity {
 				"onBackPressed Called. gridField currentItem: "
 						+ mGridField.getCurrentItem());
 
-		if (mGridField.getCurrentItem() == 0) {
-			super.onBackPressed();
+		String currentGroupTitle = currentGroupInfo.getDisplayName();
+
+		if (SelectedItemList.INSTANCE.getSize() > 0) {
 			SelectedItemList.INSTANCE.clear();
+			reDrawGridField();
+		}
+
+		else if (currentGroupTitle == "All" && mGridField.getCurrentItem() == 0) {
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Quit Editing");
+			builder.setPositiveButton("Yes", new OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					finish();
+				}
+			});
+			builder.setNegativeButton("No", null);
+			builder.create().show();
+
+		} else if (currentGroupTitle != "All"
+				&& mGridField.getCurrentItem() == 0) {
+			setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+			SelectedItemList.INSTANCE
+					.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+			reDrawMenuField();
+
+			mActionBar.setTitle("Edit - All");
+
+			mContactController = new ContactController(this, null);
+			mGridField.setAdapter(new CellPagerAdapter(mContactController
+					.getGridFieldViews(4, 4)));
+			mGridField.setCurrentItem(getCurrentItem());
+
+			mCirclePageIndicator.setViewPager(mGridField);
+			mCirclePageIndicator.setCurrentItem(getCurrentItem());
+
+			menuFieldCurrentItem = 0;
+			mMenuField.setCurrentItem(0);
+
+			mLinePageIndicator.setCurrentItem(0);
+
 		} else {
+
+			setCurrentItem(0);
 			mGridField.setCurrentItem(0);
 		}
 
 	}
-
-	// public static void saveGridFieldCurrentItem() {
-	// setGridFieldCurrentItem(gridField.getCurrentItem());
-	// }
-	//
-	// public static int getGridFieldCurrentItem() {
-	// return gridFieldCurrentItem;
-	// }
-	//
-	// public static void setGridFieldCurrentItem(int gridFieldCurrentItem) {
-	// EditActivity.gridFieldCurrentItem = gridFieldCurrentItem;
-	// }
 
 	public static GroupCellInfo getCurrentGroupInfo() {
 		return currentGroupInfo;
@@ -291,4 +436,20 @@ public class EditActivity extends Activity {
 		}
 	}
 
+	public static void reDrawGridField() {
+		for (int i = 0; i < mGridField.getChildCount(); i++) {
+			GridView currentGridView = (GridView) mGridField.getChildAt(i);
+			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
+			adapter.notifyDataSetChanged();
+
+		}
+	}
+
+	public static void reDrawMenuField() {
+		for (int i = 0; i < mMenuField.getChildCount(); i++) {
+			GridView currentGridView = (GridView) mMenuField.getChildAt(i);
+			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
+			adapter.notifyDataSetChanged();
+		}
+	}
 }

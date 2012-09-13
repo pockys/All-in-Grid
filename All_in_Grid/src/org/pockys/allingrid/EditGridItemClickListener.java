@@ -1,11 +1,7 @@
 package org.pockys.allingrid;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -13,8 +9,8 @@ import android.widget.AdapterView.OnItemClickListener;
 public class EditGridItemClickListener implements OnItemClickListener {
 
 	public static final String TAG = "EditClickListener";
-	public static final int BACKGROUND_COLOR = Color.rgb(255, 160, 10);
-	public static final float ALPHA_VALUE = 0.7f;
+	public static final int BACKGROUND_COLOR = Color.rgb(132, 189, 255);
+	// public static final float ALPHA_VALUE = 0.7f;
 
 	private Context mContext;
 
@@ -25,8 +21,6 @@ public class EditGridItemClickListener implements OnItemClickListener {
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-
-		// ImageView imageView = (ImageView) view.findViewById(R.id.cell_image);
 
 		assert (view.getTag() instanceof ContactCellInfo) : "cellInfo is not instance of contact cellInfo!!";
 

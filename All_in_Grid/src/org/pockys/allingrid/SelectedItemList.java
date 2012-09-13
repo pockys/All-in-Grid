@@ -8,6 +8,8 @@ import android.util.Log;
 public enum SelectedItemList {
 	INSTANCE;
 
+	private GroupCellInfo mSelectedGroupInfo = MenuController.AllGroupCellInfo;
+
 	private ArrayList<Integer> mSelectedContactIdList = new ArrayList<Integer>();
 
 	public boolean contain(int contactId) {
@@ -44,4 +46,13 @@ public enum SelectedItemList {
 		Log.d(TAG, "mSelected ContactId List\n" + list);
 
 	}
+
+	public GroupCellInfo getSelectedGroupInfo() {
+		return mSelectedGroupInfo;
+	}
+
+	public void setSelectedGroupInfo(GroupCellInfo mSelectedGroupInfo) {
+		this.mSelectedGroupInfo = mSelectedGroupInfo;
+	}
+
 }

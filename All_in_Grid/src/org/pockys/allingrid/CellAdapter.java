@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,7 @@ import android.widget.TextView;
 
 public class CellAdapter extends BaseAdapter {
 
-	private static final String TAG = "ContactAdapter";
+	private static final String TAG = "CellAdapter";
 
 	private Context mContext;
 	private LayoutInflater layoutInflater;
@@ -95,16 +96,29 @@ public class CellAdapter extends BaseAdapter {
 		if (cellInfo instanceof GroupCellInfo) {
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
-
 			imageView.setImageResource(cellInfo.getThumbnailResId());
+
+			// Log.d(TAG,
+			// "selected groupTitle: "
+			// + SelectedItemList.INSTANCE.getSelectedGroupInfo()
+			// .getDisplayName() + " this groupTitle: "
+			// + cellInfo.getDisplayName());
+
+			GroupCellInfo selectedGroupInfo = SelectedItemList.INSTANCE
+					.getSelectedGroupInfo();
+			if (selectedGroupInfo.getDisplayName().equals(
+					cellInfo.getDisplayName())) {
+				cell.setBackgroundColor(MenuController.BACKGROUND_COLOR);
+				// Log.d(TAG, "set BACKGROUND COLOR");
+			} else {
+				cell.setBackgroundColor(Color.TRANSPARENT);
+				// Log.d(TAG, "set TRANSPARENT");
+			}
 		}
 
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
 		textView.setText(cellInfo.getDisplayName());
-
-		// if (cellInfo instanceof ContactCellInfo)
-		// cell.setTag(((ContactCellInfo) cellInfo).getContactId());
 
 		cell.setTag(cellInfo);
 
