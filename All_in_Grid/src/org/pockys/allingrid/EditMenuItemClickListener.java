@@ -47,6 +47,8 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		MainActivity.makeToast(mContext, "Insert " + selectedPeopleCount
 				+ " people to " + groupCellInfo.getDisplayName());
 
+		String groupTitle = groupCellInfo.getDisplayName();
+
 		// insert
 		int groupId = groupCellInfo.getGroupId();
 		Uri contactUri = ContactsContract.Data.CONTENT_URI;
@@ -61,46 +63,31 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		for (; contactIdItr.hasNext();) {
 			int contactId = contactIdItr.next();
 
-			// Get account data from system
-			// AuthenticatorDescription[] accountTypes = AccountManager.get(
-			// mContext).getAuthenticatorTypes();
+			if (groupTitle == "All") {
 
-			String accountType = "com.google";
-			String accountName = "likepeppermint@gmail.com";
+			} else if (groupTitle == "Favorite") {
+				Log.d(TAG, "Favorite. contact Id: " + contactId);
+				op = ContentProviderOperation
+						.newUpdate(ContactsContract.Contacts.CONTENT_URI)
+						.withSelection(
+								ContactsContract.Contacts._ID + " = '"
+										+ getRawContactId(contactId) + "'",
+								null)
+						.withValue(ContactsContract.Contacts.STARRED, 1);
+				ops.add(op.build());
 
-			op = ContentProviderOperation
-					.newInsert(ContactsContract.RawContacts.CONTENT_URI)
-					.withValue(ContactsContract.RawContacts.ACCOUNT_TYPE,
-							accountType)
-					.withValue(ContactsContract.RawContacts.ACCOUNT_NAME,
-							accountName);
-			ops.add(op.build());
-
-			op = ContentProviderOperation
-					.newInsert(ContactsContract.Data.CONTENT_URI)
-					.withValueBackReference(
-							ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(
-							ContactsContract.Data.MIMETYPE,
-							ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-					.withValue(
-							ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
-							"GOLLLLLLLLLD");
-			ops.add(op.build());
-
-			op = ContentProviderOperation
-					.newInsert(contactUri)
-					.withValueBackReference(
-							ContactsContract.Data.RAW_CONTACT_ID, 0)
-					.withValue(
-							// ContactsContract.CommonDataKinds.GroupMembership.MIMETYPE,
-							// ContactsContract.CommonDataKinds.GroupMembership.CONTENT_ITEM_TYPE)
-							ContactsContract.Data.MIMETYPE,
-							ContactsContract.Data.CONTENT_TYPE)
-					.withValue(
-							ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
-							groupId);
-			ops.add(op.build());
+			} else {
+				op = ContentProviderOperation
+						.newInsert(ContactsContract.Data.CONTENT_URI)
+						.withValue(ContactsContract.Data.RAW_CONTACT_ID,
+								getRawContactId(contactId))
+						.withValue(ContactsContract.Data.MIMETYPE,
+								ContactsContract.Data.CONTENT_TYPE)
+						.withValue(
+								ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
+								groupId);
+				ops.add(op.build());
+			}
 
 		}
 
@@ -116,13 +103,13 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 				int contactId = it.next();
 				String[] selection = new String[] {
 						ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
-						ContactsContract.Data.RAW_CONTACT_ID };
+						ContactsContract.Data.RAW_CONTACT_ID,
+						ContactsContract.Data._ID };
 				String where = ContactsContract.Data.CONTACT_ID + " = "
 						+ contactId;
-				Cursor cursor = mContext.getContentResolver().query(contactUri,
-						selection, where, null, null);
-
-				ArrayList<Integer> rawContactIdList = new ArrayList<Integer>();
+				Cursor cursor = mContext.getContentResolver().query(
+						ContactsContract.Data.CONTENT_URI, selection, where,
+						null, null);
 
 				for (; cursor.moveToNext();) {
 					String groupIdString = cursor
@@ -131,10 +118,12 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 					String rawContactIdString = cursor
 							.getString(cursor
 									.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID));
-					rawContactIdList.add(Integer.parseInt(rawContactIdString));
+					String idString = cursor.getString(cursor
+							.getColumnIndex(ContactsContract.Data._ID));
 					Log.d(TAG, "Contact Id: " + contactId + " Group Id: "
 							+ groupIdString + " raw Contact Id: "
-							+ rawContactIdString);
+							+ rawContactIdString + " id: " + idString);
+
 				}
 			}
 			// for debug ******************
@@ -169,4 +158,48 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		// ################################################################
 
 	}
+
+	private int getRawContactId(int contactId) {
+		String[] selection = new String[] { ContactsContract.Data.RAW_CONTACT_ID, };
+		String where = ContactsContract.Data.CONTACT_ID + " = '" + contactId
+				+ "'";
+		Cursor cursor = mContext.getContentResolver()
+				.query(ContactsContract.Data.CONTENT_URI, selection, where,
+						null, null);
+		for (; cursor.moveToNext();) {
+			String rawContactIdString = cursor.getString(cursor
+					.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID));
+			if (rawContactIdString != null) {
+				cursor.close();
+				return Integer.parseInt(rawContactIdString);
+			}
+		}
+
+		cursor.close();
+		return -1;
+	}
+
+	private int getFavoriteGroupId() {
+
+		// Starred in Android
+
+		String[] selection = new String[] { ContactsContract.Groups._ID };
+		String where = ContactsContract.Groups.TITLE
+				+ "LIKE 'Starred in Android'";
+		Cursor cursor = mContext.getContentResolver()
+				.query(ContactsContract.Data.CONTENT_URI, selection, where,
+						null, null);
+		for (; cursor.moveToNext();) {
+			String favoriteGroupIdString = cursor.getString(cursor
+					.getColumnIndex(ContactsContract.Groups._ID));
+			if (favoriteGroupIdString != null) {
+				cursor.close();
+				return Integer.parseInt(favoriteGroupIdString);
+			}
+		}
+
+		cursor.close();
+		return -1;
+	}
+
 }
