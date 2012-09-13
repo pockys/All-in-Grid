@@ -3,7 +3,7 @@
     <string name="app_name">Character Grouping</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_main_activity">All in Grid</string>
+    <string name="title_main_activity">キャラグル</string>
     <string name="title_edit_activity">Edit</string>
     <string name="menu_sort">SORT</string>
     <string name="menu_edit">EDIT</string>
