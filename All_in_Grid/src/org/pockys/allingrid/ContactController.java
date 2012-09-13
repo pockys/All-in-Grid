@@ -38,8 +38,8 @@ public class ContactController implements OnItemClickListener,
 
 	public ContactController(Context context) {
 		this(context, null);
-//		sharedPreferences = context.getSharedPreferences("sharePreferences",
-//				Context.MODE_PRIVATE);
+		// sharedPreferences = context.getSharedPreferences("sharePreferences",
+		// Context.MODE_PRIVATE);
 	}
 
 	public ContactController(Context context, String selection) {
@@ -92,13 +92,12 @@ public class ContactController implements OnItemClickListener,
 		String CONTACTS_SORT_ORDER = ContactsContract.Data.DISPLAY_NAME
 				+ " COLLATE LOCALIZED ASC";
 
-		 if (selection != null || selection == "")
-		 selection += " AND ";
-		 else
-		 selection = "";
-		
-		 selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
+		if (selection != null || selection == "")
+			selection += " AND ";
+		else
+			selection = "";
 
+		selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
 		return mContext.getContentResolver().query(contactUri, PROJECTION,
 				selection, null, CONTACTS_SORT_ORDER);
 	}
@@ -187,16 +186,16 @@ public class ContactController implements OnItemClickListener,
 						@Override
 						public void onItemClick(AdapterView<?> v, View arg1,
 								int arg2, long arg3) {
-							 
 
 							IconInfo Samp = IconListLib.INSTANCE
 									.getIconInfo(arg2);
-							
-							//SharedPreferences.Editor editor = sharedPreferences.edit();
+
+							// SharedPreferences.Editor editor =
+							// sharedPreferences.edit();
 
 							Log.d(tab, "Check! ");
-							//editor.putInt(Integer.toString(contactId), arg2);
-							//editor.commit();
+							// editor.putInt(Integer.toString(contactId), arg2);
+							// editor.commit();
 
 							ImageView imageView = (ImageView) cell
 									.findViewById(R.id.cell_image);

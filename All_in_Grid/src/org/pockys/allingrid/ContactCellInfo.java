@@ -11,5 +11,4 @@ public class ContactCellInfo extends CellInfo {
 	public void setContactId(int contactId) {
 		this.contactId = contactId;
 	}
-
 }

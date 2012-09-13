@@ -6,6 +6,7 @@ import java.util.Iterator;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
@@ -51,7 +52,6 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 
 		// insert
 		int groupId = groupCellInfo.getGroupId();
-		Uri contactUri = ContactsContract.Data.CONTENT_URI;
 
 		Log.d(TAG, "Group ID: " + groupId);
 
@@ -123,7 +123,10 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 					Log.d(TAG, "Contact Id: " + contactId + " Group Id: "
 							+ groupIdString + " raw Contact Id: "
 							+ rawContactIdString + " id: " + idString);
+<<<<<<< HEAD
 
+=======
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 				}
 			}
 			// for debug ******************
@@ -201,5 +204,8 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		cursor.close();
 		return -1;
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 }

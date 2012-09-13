@@ -143,7 +143,6 @@ public class MenuController implements OnItemClickListener {
 
 		} else if (groupTitle.equals("Favorite")) {
 			selection = ContactsContract.Contacts.STARRED + " = 1";
-			;
 		} else {
 			int groupId = groupCellInfo.getGroupId();
 			selection = ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
