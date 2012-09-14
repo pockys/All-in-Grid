@@ -16,7 +16,7 @@ public enum IconListLib {
 
 	private ArrayList<IconInfo> ListView = new ArrayList<IconInfo>();
 
-	int CurrentCategoy = 0;
+	private int CurrentCategoy = 0;
 
 	private IconListLib() {
 		// data.add(new IconInfo(R.drawable.ic_gotouti_001, "gotouti_001",

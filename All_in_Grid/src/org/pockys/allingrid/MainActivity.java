@@ -1,5 +1,6 @@
 package org.pockys.allingrid;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import android.app.ActionBar;
@@ -20,10 +21,13 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.viewpagerindicator.CirclePageIndicator;
@@ -41,6 +45,9 @@ public class MainActivity extends Activity {
 
 	private MenuController mMenuController;
 	private ContactController mContactController;
+
+	// private ArrayList<GridView> currentGridViewList = new
+	// ArrayList<GridView>();
 
 	private static CirclePageIndicator mCirclePageIndicator;
 	private LinePageIndicator mLinePageIndicator;
@@ -119,6 +126,7 @@ public class MainActivity extends Activity {
 		mMenuController = new MenuController(this);
 		mContactController = new ContactController(this,
 				getSelection(getCurrentGroupInfo()));
+		// currentGridViewList = mContactController.getGridFieldViews(4, 4);
 
 		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
@@ -236,7 +244,7 @@ public class MainActivity extends Activity {
 					.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
 			reDrawMenuField();
 
-			resetGridField();
+			resetGridField(MenuController.AllGroupCellInfo);
 
 			break;
 		case R.id.menu_phone:
@@ -261,15 +269,60 @@ public class MainActivity extends Activity {
 			final SharedPreferences sharedPreferences = getSharedPreferences(
 					"sharePreferences", Context.MODE_PRIVATE);
 
-			final CharSequence[] Categoryitems = { "All", "Category" };
-
 			AlertDialog.Builder shuffleDialogBuilder = new AlertDialog.Builder(
 					this);
 			shuffleDialogBuilder.setTitle("Icon Shuffle");
-			OnClickListener Categorylistner = new OnClickListener() {
+
+			ListView listView = new ListView(mContext);
+			listView.setAdapter(new BaseAdapter() {
+
+				private final String[] items = { "All", "Category" };
 
 				@Override
-				public void onClick(DialogInterface arg0, int position) {
+				public View getView(int position, View convertView,
+						ViewGroup parent) {
+					TextView textView = null;
+					if (convertView == null) {
+						textView = (TextView) LayoutInflater.from(mContext)
+								.inflate(R.layout.list_view_item, null);
+
+					} else
+						textView = (TextView) convertView;
+
+					textView.setText(items[position]);
+
+					// Log.d(TAG, "textView text:  " + items[position]);
+
+					return textView;
+				}
+
+				@Override
+				public long getItemId(int position) {
+					// TODO Auto-generated method stub
+					return 0;
+				}
+
+				@Override
+				public Object getItem(int position) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public int getCount() {
+					// TODO Auto-generated method stub
+					return 2;
+				}
+			});
+			shuffleDialogBuilder.setView(listView);
+			final AlertDialog shuffleDialog = shuffleDialogBuilder.create();
+			listView.setOnItemClickListener(new OnItemClickListener() {
+
+				@Override
+				public void onItemClick(AdapterView<?> container, View view,
+						int position, long id) {
+					shuffleDialog.dismiss();
+
 					if (position == 0) {
 						IconListLib.INSTANCE.setCurrentCategoy(position);
 
@@ -278,30 +331,57 @@ public class MainActivity extends Activity {
 						editor.clear();
 						editor.commit();
 
+						resetGridField();
+
+						makeToast(mContext, "All icons are shuffled!!");
+
 					} else if (position == 1) {
 
 						LayoutInflater inflater = LayoutInflater.from(mContext);
 						GridView gridView = (GridView) inflater.inflate(
 								R.layout.grid_view, null);
 						gridView.setAdapter(new IconListAdapter(mContext, 1));
-						
+						AlertDialog.Builder categoryDialogBuilder = new AlertDialog.Builder(
+								mContext);
+
+						categoryDialogBuilder.setTitle("Change Icon");
+						categoryDialogBuilder.setView(gridView);
+
+						final AlertDialog categoryDialog = categoryDialogBuilder
+								.create();
 
 						gridView.setOnItemClickListener(new OnItemClickListener() {
 
 							@Override
 							public void onItemClick(AdapterView<?> container,
 									View view, int position, long id) {
+
+								categoryDialog.dismiss();
 								IconListLib.INSTANCE
 										.setCurrentCategoy(position + 1);
 
 								SharedPreferences.Editor editor = sharedPreferences
 										.edit();
-								for (int i = 0; i < mGridField.getChildCount(); i++) {
-									GridView gridView = (GridView) mGridField
-											.getChildAt(i);
-									for (int j = 0; j < gridView
-											.getChildCount(); j++) {
-										View cell = gridView.getChildAt(j);
+
+								ArrayList<GridView> currentGridViews = new ContactController(
+										mContext,
+										getSelection(currentGroupInfo))
+										.getGridFieldViews(4, 4);
+
+								Log.d(TAG, "currentGridViews size: "
+										+ currentGridViews);
+								for (int i = 0; i < currentGridViews.size(); i++) {
+
+									GridView gridView = currentGridViews.get(i);
+									Log.d(TAG, "[" + i + "]"
+											+ " gridView Child Count: "
+											+ gridView.getAdapter().getCount());
+
+									for (int j = 0; j < gridView.getAdapter()
+											.getCount(); j++) {
+
+										View cell = gridView.getAdapter()
+												.getView(j, null, gridView);
 										ContactCellInfo contactInfo = (ContactCellInfo) cell
 												.getTag();
 										int contactId = contactInfo
@@ -319,72 +399,36 @@ public class MainActivity extends Activity {
 															+ " c: "
 															+ (position + 1));
 
-											
 											editor.putInt(
 													Integer.toString(contactId),
 													-1);
 										}
-
 									}
 								}
+								// }
 
 								// editor.clear();
 								editor.commit();
 
-								// resetGridField();
-								Intent intent = new Intent(mContext,
-										MainActivity.class);
-								intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-								mContext.startActivity(intent);
-
+								resetGridField();
 							}
 
 						});
 
-						AlertDialog.Builder categoryDialogBuilder = new AlertDialog.Builder(
-								mContext);
-
-						categoryDialogBuilder.setTitle("Change Icon");
-						categoryDialogBuilder.setView(gridView);
-
-						categoryDialogBuilder.create().show();
+						categoryDialog.show();
 
 					}
 
 				}
-			};
-			shuffleDialogBuilder.setItems(Categoryitems, Categorylistner);
-			shuffleDialogBuilder.create().show();
 
-			/*
-			 * 
-			 * SharedPreferences.Editor editor = getSharedPreferences(
-			 * "sharePreferences", Context.MODE_PRIVATE).edit(); editor.clear();
-			 * editor.commit();
-			 * 
-			 * MenuController menuController = new MenuController(this);
-			 * contactController = new ContactController(this);
-			 * 
-			 * ViewPager gridField = (ViewPager) this
-			 * .findViewById(R.id.grid_field); gridField.setAdapter(new
-			 * CellPagerAdapter(contactController .getGridFieldViews(4, 4)));
-			 * 
-			 * ViewPager menuField = (ViewPager) this
-			 * .findViewById(R.id.menu_field); menuField.setAdapter(new
-			 * CellPagerAdapter(menuController .getMenuFieldViews(4)));
-			 * 
-			 * MainActivity.makeToast(this, "All icons are shuffled!!");
-			 * 
-			 * break;
-			 */
-
+			});
+			shuffleDialog.show();
 		}
-
 		return true;
 	}
 
 	public static void resetGridField() {
-		resetGridField(MenuController.AllGroupCellInfo);
+		resetGridField(currentGroupInfo);
 	}
 
 	public static void resetGridField(GroupCellInfo groupInfo) {

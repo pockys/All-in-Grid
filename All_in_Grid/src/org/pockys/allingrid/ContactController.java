@@ -17,7 +17,6 @@ import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -25,10 +24,8 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.QuickContactBadge;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 public class ContactController implements OnItemClickListener,
@@ -168,15 +165,9 @@ public class ContactController implements OnItemClickListener,
 		final int contactId = contactCellInfo.getContactId();
 		final boolean added = containFavorites(contactCellInfo);
 
-		// "Delete" };
-
-		// Log.d(TAG, items[2].toString());
-
 		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
 		FirstBuilder.setTitle("Edit - " + contactCellInfo.getDisplayName());
 		ListView listView = new ListView(mContext);
-
-		// FirstBuilder.setItems(items, listener);
 
 		listView.setAdapter(new BaseAdapter() {
 			final String[] items = { "Change Icon", "Edit Profile",
@@ -186,14 +177,15 @@ public class ContactController implements OnItemClickListener,
 			public View getView(int position, View convertView, ViewGroup parent) {
 				TextView textView = null;
 				if (convertView == null) {
-					textView = new TextView(mContext);
+					textView = (TextView) LayoutInflater.from(mContext)
+							.inflate(R.layout.list_view_item, null);
 
 				} else
 					textView = (TextView) convertView;
 
 				textView.setText(items[position]);
 
-				Log.d(TAG, "textView text:  " + items[position]);
+				// Log.d(TAG, "textView text:  " + items[position]);
 
 				return textView;
 			}
@@ -221,20 +213,10 @@ public class ContactController implements OnItemClickListener,
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
+			public void onItemClick(AdapterView<?> container, View view,
+					int position, long id) {
 				firstDialog.dismiss();
 
-			}
-
-		});
-
-		firstDialog.show();
-
-		DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-
-			@Override
-			public void onClick(final DialogInterface dia, int position) {
 				if (position == 0) {
 					LayoutInflater inflater = LayoutInflater.from(mContext);
 
@@ -243,11 +225,19 @@ public class ContactController implements OnItemClickListener,
 					gridView.setNumColumns(4);
 					gridView.setAdapter(new IconListAdapter(mContext, 0));
 
+					AlertDialog.Builder iconChangeDialog = new AlertDialog.Builder(
+							mContext);
+					iconChangeDialog.setTitle("Change Icon");
+					iconChangeDialog.setView(gridView);
+					final AlertDialog iconDialog = iconChangeDialog.create();
+
 					gridView.setOnItemClickListener(new OnItemClickListener() {
 
 						@Override
 						public void onItemClick(AdapterView<?> parent,
 								View view, int position, long id) {
+
+							iconDialog.dismiss();
 
 							IconInfo Samp = IconListLib.INSTANCE
 									.getAllIconInfo(position);
@@ -273,11 +263,7 @@ public class ContactController implements OnItemClickListener,
 
 					});
 
-					AlertDialog.Builder iconChangeDialog = new AlertDialog.Builder(
-							mContext);
-					iconChangeDialog.setTitle("Change Icon");
-					iconChangeDialog.setView(gridView);
-					iconChangeDialog.create().show();
+					iconDialog.show();
 
 				}
 
@@ -298,32 +284,12 @@ public class ContactController implements OnItemClickListener,
 								.resetGridField(MenuController.FavoriteGroupCellInfo);
 					}
 				}
-				/*
-				 * else if (position == 3) { ArrayList<ContentProviderOperation>
-				 * ops = new ArrayList<ContentProviderOperation>();
-				 * ops.add(ContentProviderOperation
-				 * .newDelete(ContactsContract.Contacts.CONTENT_URI)
-				 * .withSelection( ContactsContract.Contacts._ID + " = '" +
-				 * contactId + "'", null).build());
-				 * 
-				 * try { ContentProviderResult[] results = mContext
-				 * .getContentResolver().applyBatch( ContactsContract.AUTHORITY,
-				 * ops);
-				 * 
-				 * if (results == null || results.length == 0) {
-				 * MainActivity.makeToast(mContext, "Something was wrong!!"); }
-				 * else { MainActivity.makeToast(mContext,
-				 * contactCellInfo.getDisplayName() + " is deleted"); }
-				 * 
-				 * } catch (RemoteException e) { e.printStackTrace(); } catch
-				 * (OperationApplicationException e) { e.printStackTrace(); }
-				 * 
-				 * }
-				 */
 
 			}
 
-		};
+		});
+
+		firstDialog.show();
 
 		return false;
 
@@ -387,94 +353,6 @@ public class ContactController implements OnItemClickListener,
 			e.printStackTrace();
 		}
 
-	}
-
-}
-
-class CustomAdapter extends BaseAdapter {
-
-	LayoutInflater mLayoutInflater;
-	Context context;
-	String tag = "test";
-	int type;
-
-	public CustomAdapter(Context _context, int resource, int t) {
-		super();
-		context = _context;
-		type = t;
-	}
-
-	@Override
-	public View getView(int position, View v, ViewGroup parent) {
-
-		if (type == 0) {
-
-			mLayoutInflater = LayoutInflater.from(context);
-			if (v == null)
-				v = mLayoutInflater.inflate(R.layout.row, parent, false);
-
-			IconInfo icon = (IconInfo) getItem(position);
-
-			TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
-			countrycode.setText(icon.getName());
-
-			TextView countryname = (TextView) v.findViewById(R.id.countryname);
-			countryname.setText(icon.getInfo());
-
-			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
-			app_icon.setImageResource(icon.getImage());
-
-		}
-
-		else if (type == 1) {
-
-			mLayoutInflater = LayoutInflater.from(context);
-			if (v == null)
-				v = mLayoutInflater.inflate(R.layout.subrow, parent, false);
-
-			IconInfo icon = (IconInfo) getItem(position);
-
-			TextView countryname = (TextView) v.findViewById(R.id.countryname);
-			countryname.setText(icon.getInfo());
-
-			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
-			app_icon.setImageResource(icon.getImage());
-
-		}
-
-		return v;
-
-	}
-
-	@Override
-	public int getCount() {
-		// TODO Auto-generated method stub
-
-		if (type == 0) {
-			return IconListLib.INSTANCE.getAllIconInfoSize();
-		} else {
-
-			return IconListLib.INSTANCE.getListViewIconInfoSize();
-
-		}
-	}
-
-	@Override
-	public Object getItem(int position) {
-		// TODO Auto-generated method stub
-
-		if (type == 0) {
-			return IconListLib.INSTANCE.getAllIconInfo(position);
-		} else {
-			return IconListLib.INSTANCE.getListViewIconInfo(position);
-
-		}
-	}
-
-	@Override
-	public long getItemId(int position) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }
