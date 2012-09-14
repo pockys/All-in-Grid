@@ -86,43 +86,44 @@ public class EditActivity extends Activity {
 		case android.R.id.home:
 			SelectedItemList.INSTANCE.clear();
 
-			// if (currentGroupInfo.getDisplayName() == "All") {
-			builder = new AlertDialog.Builder(this);
-			builder.setTitle("Quit Editing");
-			builder.setPositiveButton("Yes", new OnClickListener() {
+			if (currentGroupInfo.getDisplayName() == "All") {
+				builder = new AlertDialog.Builder(this);
+				builder.setTitle("Quit Editing");
+				builder.setPositiveButton("Yes", new OnClickListener() {
 
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
 
-					Intent intent = new Intent(context, MainActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					startActivity(intent);
-				}
-			});
-			builder.setNegativeButton("No", null);
-			builder.create().show();
-			// }
-			/*
-			 * else { saveCurrentItem();
-			 * setCurrentGroupInfo(MenuController.AllGroupCellInfo);
-			 * SelectedItemList.INSTANCE
-			 * .setSelectedGroupInfo(MenuController.AllGroupCellInfo);
-			 * EditActivity.reDrawMenuField();
-			 * 
-			 * mActionBar.setTitle("Edit - All");
-			 * 
-			 * mContactController = new ContactController(this, null);
-			 * mContactController.setOnItemClickListener(mEditClickListener);
-			 * 
-			 * mGridField.setAdapter(new CellPagerAdapter(mContactController
-			 * .getGridFieldViews(4, 4)));
-			 * mGridField.setCurrentItem(getCurrentItem());
-			 * 
-			 * mCirclePageIndicator.setViewPager(mGridField);
-			 * mCirclePageIndicator.setCurrentItem(getCurrentItem());
-			 * 
-			 * }
-			 */
+						Intent intent = new Intent(context, MainActivity.class);
+						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(intent);
+					}
+				});
+				builder.setNegativeButton("No", null);
+				builder.create().show();
+			}
+
+			else {
+				saveCurrentItem();
+				setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+				SelectedItemList.INSTANCE
+						.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+				EditActivity.reDrawMenuField();
+
+				mActionBar.setTitle("Edit - All");
+
+				mContactController = new ContactController(this, null);
+				mContactController.setOnItemClickListener(mEditClickListener);
+
+				mGridField.setAdapter(new CellPagerAdapter(mContactController
+						.getGridFieldViews(4, 4)));
+				mGridField.setCurrentItem(getCurrentItem());
+
+				mCirclePageIndicator.setViewPager(mGridField);
+				mCirclePageIndicator.setCurrentItem(getCurrentItem());
+
+			}
+
 			return true;
 		case R.id.menu_disconnect:
 
