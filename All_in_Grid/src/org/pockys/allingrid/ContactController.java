@@ -250,14 +250,9 @@ public class ContactController implements OnItemClickListener,
 
 							SharedPreferences.Editor editor = sharedPreferences
 									.edit();
-							editor.putInt(Integer.toString(contactId), position);
+							editor.putInt(Integer.toString(contactId),
+									Samp.getImage());
 							editor.commit();
-
-							// back to MainActivity
-							Intent intent = new Intent(mContext,
-									MainActivity.class);
-							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-							mContext.startActivity(intent);
 
 						}
 

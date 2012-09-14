@@ -29,7 +29,8 @@ public enum SelectedItemList {
 	}
 
 	public void add(int contactId) {
-		mSelectedContactIdList.add(contactId);
+		if (!mSelectedContactIdList.contains(contactId))
+			mSelectedContactIdList.add(contactId);
 	}
 
 	public void clear() {
@@ -46,7 +47,7 @@ public enum SelectedItemList {
 		Log.d(TAG, "mSelected ContactId List\n" + list);
 
 	}
- 
+
 	public GroupCellInfo getSelectedGroupInfo() {
 		return mSelectedGroupInfo;
 	}

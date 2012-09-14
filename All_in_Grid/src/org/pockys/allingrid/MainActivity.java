@@ -12,7 +12,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.view.ViewPager;
@@ -247,10 +246,10 @@ public class MainActivity extends Activity {
 			resetGridField(MenuController.AllGroupCellInfo);
 
 			break;
-		case R.id.menu_phone:
-			intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
-			startActivity(intent);
-			break;
+		// case R.id.menu_phone:
+		// intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
+		// startActivity(intent);
+		// break;
 		case R.id.menu_edit:
 			intent = new Intent(this, EditActivity.class);
 			startActivity(intent);

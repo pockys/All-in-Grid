@@ -37,6 +37,12 @@ public class EditGridItemClickListener implements OnItemClickListener {
 		}
 		// EditActivity.reDrawGridField();
 
+		if (SelectedItemList.INSTANCE.getSize() > 0) {
+			EditActivity.setDisconnectMenuVisibility(true);
+		} else {
+			EditActivity.setDisconnectMenuVisibility(false);
+		}
+
 		SelectedItemList.INSTANCE.logContactIdList(TAG);
 	}
 }

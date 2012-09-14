@@ -5,5 +5,9 @@
         android:id="@+id/menu_disconnect"
         android:showAsAction="ifRoom|withText"
         android:title="@string/menu_disconnect"/>
+    <item
+        android:id="@+id/menu_all_select"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/menu_all_select"/>
 
 </menu>

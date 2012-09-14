@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 
@@ -47,8 +48,15 @@ public class EditActivity extends Activity {
 	private CirclePageIndicator mCirclePageIndicator;
 	private LinePageIndicator mLinePageIndicator;
 
+	private static Menu mMenu;
+
 	private static Hashtable<GroupCellInfo, Integer> currentItemTable;
 	private static GroupCellInfo currentGroupInfo;
+
+	public static void setDisconnectMenuVisibility(boolean visible) {
+		mMenu.findItem(R.id.menu_disconnect).setVisible(visible);
+
+	}
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,9 +79,24 @@ public class EditActivity extends Activity {
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
+		mMenu = menu;
 		getMenuInflater().inflate(R.menu.activity_edit, menu);
 		return true;
 	}
+
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem disconnectMenu = menu.findItem(R.id.menu_disconnect);
+		if (SelectedItemList.INSTANCE.getSize() > 0) {
+			disconnectMenu.setVisible(true);
+
+		} else {
+			disconnectMenu.setVisible(false);
+		}
+
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	private boolean isSelected = false;
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -84,7 +107,6 @@ public class EditActivity extends Activity {
 		switch (item.getItemId()) {
 		// app icon in action bar clicked; go home
 		case android.R.id.home:
-			SelectedItemList.INSTANCE.clear();
 
 			if (currentGroupInfo.getDisplayName() == "All") {
 				builder = new AlertDialog.Builder(this);
@@ -94,9 +116,12 @@ public class EditActivity extends Activity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 
+						SelectedItemList.INSTANCE.clear();
+
 						Intent intent = new Intent(context, MainActivity.class);
 						intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 						startActivity(intent);
+
 					}
 				});
 				builder.setNegativeButton("No", null);
@@ -125,11 +150,49 @@ public class EditActivity extends Activity {
 			}
 
 			return true;
+		case R.id.menu_all_select:
+
+			ContactController contactController = new ContactController(this,
+					getSelection(currentGroupInfo));
+			ArrayList<GridView> gridViewList = contactController
+					.getGridFieldViews(4, 4);
+			Log.d(TAG, "gridViewList size: " + gridViewList.size());
+			for (int i = 0; i < gridViewList.size(); i++) {
+				GridView gridView = gridViewList.get(i);
+				for (int j = 0; j < gridView.getAdapter().getCount(); j++) {
+					View cell = gridView.getAdapter()
+							.getView(j, null, gridView);
+					ContactCellInfo contactInfo = (ContactCellInfo) cell
+							.getTag();
+					int contactId = contactInfo.getContactId();
+
+					Log.d(TAG, "[" + i + ", " + j + "]" + "contactId: "
+							+ contactId);
+					if (isSelected) {
+						SelectedItemList.INSTANCE.remove(contactId);
+					} else {
+						SelectedItemList.INSTANCE.add(contactId);
+					}
+				}
+			}
+
+			if (isSelected) {
+				item.setTitle("All Selection");
+				mMenu.findItem(R.id.menu_disconnect).setVisible(false);
+
+			} else {
+				item.setTitle("Clear Selection");
+				mMenu.findItem(R.id.menu_disconnect).setVisible(true);
+			}
+			isSelected = !isSelected;
+			reDrawGridField();
+
+			return true;
 		case R.id.menu_disconnect:
 
 			int selectedPeopleCount = SelectedItemList.INSTANCE.getSize();
-
 			if (selectedPeopleCount == 0)
+
 				return true;
 
 			// disconnect
@@ -158,7 +221,9 @@ public class EditActivity extends Activity {
 				positiveButtonMessage = "Yes";
 				negativeButtonMessage = "No";
 			}
+
 			builder = new AlertDialog.Builder(this);
+			// builder.setCancelable(false);
 			builder.setTitle(dialogTitle);
 			builder.setMessage(dialogMessage);
 			builder.setNegativeButton(negativeButtonMessage,
@@ -260,7 +325,8 @@ public class EditActivity extends Activity {
 											getSelection(currentGroupInfo));
 									if (mContactController.getSize() == 0) {
 										setCurrentGroupInfo(MenuController.AllGroupCellInfo);
-										setCurrentItem(0);
+										setCurrentItem(getCurrentItem());
+										mActionBar.setTitle("Edit - All");
 										SelectedItemList.INSTANCE
 												.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
 										reDrawMenuField();
@@ -298,30 +364,31 @@ public class EditActivity extends Activity {
 		}
 	}
 
-	private void resetField() {
-		SelectedItemList.INSTANCE.clear();
-		saveCurrentItem();
-
-		mContactController = new ContactController(this,
-				MainActivity.getSelection(currentGroupInfo));
-		if (currentGroupInfo.getDisplayName() != "All"
-				&& mContactController.getSize() == 0) {
-			setCurrentGroupInfo(MenuController.AllGroupCellInfo);
-			SelectedItemList.INSTANCE
-					.setSelectedGroupInfo(MenuController.AllGroupCellInfo);
-			reDrawMenuField();
-			mContactController = new ContactController(this, null);
-		}
-		mContactController.setOnItemClickListener(mEditClickListener);
-
-		mGridField.setAdapter(new CellPagerAdapter(mContactController
-				.getGridFieldViews(4, 4)));
-		mGridField.setCurrentItem(getCurrentItem());
-
-		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-		circlePageIndicator.setViewPager(mGridField);
-		circlePageIndicator.setCurrentItem(getCurrentItem());
-	}
+	// private void resetField() {
+	// SelectedItemList.INSTANCE.clear();
+	// saveCurrentItem();
+	//
+	// mContactController = new ContactController(this,
+	// MainActivity.getSelection(currentGroupInfo));
+	// if (currentGroupInfo.getDisplayName() != "All"
+	// && mContactController.getSize() == 0) {
+	// setCurrentGroupInfo(MenuController.AllGroupCellInfo);
+	// SelectedItemList.INSTANCE
+	// .setSelectedGroupInfo(MenuController.AllGroupCellInfo);
+	// reDrawMenuField();
+	// mContactController = new ContactController(this, null);
+	// }
+	// mContactController.setOnItemClickListener(mEditClickListener);
+	//
+	// mGridField.setAdapter(new CellPagerAdapter(mContactController
+	// .getGridFieldViews(4, 4)));
+	// mGridField.setCurrentItem(getCurrentItem());
+	//
+	// CirclePageIndicator circlePageIndicator = (CirclePageIndicator)
+	// findViewById(R.id.circle_page_indicator_grid);
+	// circlePageIndicator.setViewPager(mGridField);
+	// circlePageIndicator.setCurrentItem(getCurrentItem());
+	// }
 
 	public void onStart() {
 		super.onStart();
