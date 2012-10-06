@@ -18,7 +18,7 @@ public class CellPagerAdapter extends PagerAdapter {
 	// private final int mNumCells;
 	// private Context mContext;
 	// private Cursor mContactsCursor;
-
+ 
 	private ArrayList<GridView> mPagedViews = new ArrayList<GridView>();
 
 	public CellPagerAdapter(ArrayList<GridView> pagedViews) {
@@ -29,7 +29,7 @@ public class CellPagerAdapter extends PagerAdapter {
 	@Override
 	public int getCount() {
 		return mPagedViews.size();
-	}
+	}                                                                                                              
 
 	@Override
 	public Object instantiateItem(View container, int position) {

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +16,7 @@ import android.widget.TextView;
 
 public class CellAdapter extends BaseAdapter {
 
-	private static final String TAG = "ContactAdapter";
+	private static final String TAG = "CellAdapter";
 
 	private Context mContext;
 	private LayoutInflater layoutInflater;
@@ -67,23 +69,28 @@ public class CellAdapter extends BaseAdapter {
 
 			int contactId = ((ContactCellInfo) cellInfo).getContactId();
 
-			int rand = sharedPreferences
-					.getInt(Integer.toString(contactId), -1);
-			if (rand == -1) {
+			int imageResId = sharedPreferences.getInt(
+					Integer.toString(contactId), -1);
+			if (imageResId == -1) {
 
 				SharedPreferences.Editor editor = sharedPreferences.edit();
+				IconInfo randomname = null;
+
+				int rand;
 
 				if (IconListLib.INSTANCE.getCurrentCategoy() == 0) {
 
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getAllIconInfoSize());
 
+					randomname = IconListLib.INSTANCE.getAllIconInfo(rand);
 				}
 
 				else if (IconListLib.INSTANCE.getCurrentCategoy() == 1) {
 
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getkinokoIconInfoSize());
+					randomname = IconListLib.INSTANCE.getkinokoIconInfo(rand);
 
 				}
 
@@ -91,6 +98,7 @@ public class CellAdapter extends BaseAdapter {
 
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getstrangeIconInfoSize());
+					randomname = IconListLib.INSTANCE.getstrangeIconInfo(rand);
 
 				}
 
@@ -99,81 +107,69 @@ public class CellAdapter extends BaseAdapter {
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.getmonoIconInfoSize());
 
+					randomname = IconListLib.INSTANCE.getmonoIconInfo(rand);
+
 				}
 
 				else if (IconListLib.INSTANCE.getCurrentCategoy() == 4) {
 
 					rand = (int) (Math.random() * IconListLib.INSTANCE
 							.gettizukigouViewIconInfoSize());
+					randomname = IconListLib.INSTANCE
+							.gettizukigouViewIconInfo(rand);
 
 				}
-				editor.putInt(Integer.toString(contactId), rand);
+
+				imageResId = randomname.getImage();
+				Log.d(TAG, "Cell preference generated. contactId: " + contactId
+						+ " imageResId: " + imageResId);
+
+				editor.putInt(Integer.toString(contactId),
+						randomname.getImage());
 				editor.commit();
 			}
 
-			IconInfo randomname = null;
-
-			if (IconListLib.INSTANCE.getCurrentCategoy() == 0) {
-
-				randomname = IconListLib.INSTANCE.getAllIconInfo(rand);
-
-			}
-
-			else if (IconListLib.INSTANCE.getCurrentCategoy() == 1) {
-
-				randomname = IconListLib.INSTANCE.getkinokoIconInfo(rand);
-
-			}
-
-			else if (IconListLib.INSTANCE.getCurrentCategoy() == 2) {
-
-				randomname = IconListLib.INSTANCE.getstrangeIconInfo(rand);
-
-			}
-
-			else if (IconListLib.INSTANCE.getCurrentCategoy() == 3) {
-
-				randomname = IconListLib.INSTANCE.getmonoIconInfo(rand);
-
-			}
-
-			else if (IconListLib.INSTANCE.getCurrentCategoy() == 4) {
-
-				randomname = IconListLib.INSTANCE
-						.gettizukigouViewIconInfo(rand);
-
-			}
-			int Randname = randomname.getImage();
+			// int Randname = randomname.getImage();
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
-			imageView.setImageResource(Randname);
+			imageView.setImageResource(imageResId);
 
-			if (((Activity) mContext).getClass().equals(EditActivity.class)
-					&& SelectedItemList.INSTANCE.contain(contactId)) {
+			if (((Activity) mContext).getClass().equals(EditActivity.class)) {
 
-				cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
+				if (SelectedItemList.INSTANCE.contain(contactId)) {
+					cell.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
 
+				} else {
+					cell.setBackgroundColor(Color.TRANSPARENT);
+
+				}
 			}
 		}
 
 		if (cellInfo instanceof GroupCellInfo) {
 			ImageView imageView = (ImageView) cell
 					.findViewById(R.id.cell_image);
-
 			imageView.setImageResource(cellInfo.getThumbnailResId());
+
+			GroupCellInfo selectedGroupInfo = SelectedItemList.INSTANCE
+					.getSelectedGroupInfo();
+			if (selectedGroupInfo.getDisplayName().equals(
+					cellInfo.getDisplayName())) {
+				cell.setBackgroundColor(MenuController.BACKGROUND_COLOR);
+				// Log.d(TAG, "set BACKGROUND COLOR");
+			} else {
+				cell.setBackgroundColor(Color.TRANSPARENT);
+				// Log.d(TAG, "set TRANSPARENT");
+			}
 		}
 
 		// set text
 		TextView textView = (TextView) cell.findViewById(R.id.cell_label);
 		textView.setText(cellInfo.getDisplayName());
 
-		// if (cellInfo instanceof ContactCellInfo)
-		// cell.setTag(((ContactCellInfo) cellInfo).getContactId());
-
 		cell.setTag(cellInfo);
 
 		return cell;
 
 	}
-
 }

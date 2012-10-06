@@ -38,46 +38,54 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		int selectedPeopleCount = SelectedItemList.INSTANCE.getSize();
 
 		assert (view.getTag() instanceof GroupCellInfo) : " is not instance of GroupCellInfo!!";
-		GroupCellInfo groupCellInfo = (GroupCellInfo) view.getTag();
-		String groupTitle = groupCellInfo.getDisplayName();
-		int groupId = groupCellInfo.getGroupId();
-
+		GroupCellInfo selectedGroupInfo = (GroupCellInfo) view.getTag();
+		String selectedGroupTitle = selectedGroupInfo.getDisplayName();
+		int groupId = selectedGroupInfo.getGroupId();
+ 
 		ActionBar actionBar = ((Activity) mContext).getActionBar();
 
-		Log.d(TAG, "Group ID: " + groupId);
 		if (selectedPeopleCount == 0) {
 
-			actionBar.setTitle("Edit - " + groupTitle);
-			EditActivity.setCurrentGroupInfo(groupCellInfo);
+			// set background highlighted
+			SelectedItemList.INSTANCE.setSelectedGroupInfo(selectedGroupInfo);
+			EditActivity.reDrawMenuField();
 
-			int gridFieldCurrentItem = EditActivity.getGridFieldCurrentItem();
-			String selection = null;
-			if (groupTitle == "All") {
+			actionBar.setTitle("Edit - " + selectedGroupTitle);
 
-			} else if (groupTitle == "Favorite") {
-				selection = ContactsContract.Contacts.STARRED + " = 1 ";
-
-			} else {
-				selection = ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-						+ " = '" + groupId + "'";
-			}
-
-			ContactController contactController = new ContactController(
-					mContext, selection);
-			contactController
-					.setOnItemClickListener(new EditGridItemClickListener(
-							mContext));
+			GroupCellInfo currentGroupInfo = EditActivity.getCurrentGroupInfo();
+			Log.d(TAG, "current group: "
+					+ EditActivity.getCurrentGroupInfo().getDisplayName()
+					+ " current item : " + EditActivity.getCurrentItem());
+			Log.d(TAG,
+					"selected group: " + selectedGroupTitle + " current item: "
+							+ EditActivity.getCurrentItem(selectedGroupInfo));
 
 			ViewPager gridField = (ViewPager) ((Activity) mContext)
 					.findViewById(R.id.grid_field);
-			gridField.setAdapter(new CellPagerAdapter(contactController
-					.getGridFieldViews(4, 4)));
-			gridField.setCurrentItem(gridFieldCurrentItem);
+			if (selectedGroupInfo.equals(currentGroupInfo)) {
+				EditActivity.setCurrentItem(0);
+				gridField.setCurrentItem(0);
+			} else {
 
-			CirclePageIndicator circlePageIndicator = (CirclePageIndicator) ((Activity) mContext)
-					.findViewById(R.id.circle_page_indicator_grid);
-			circlePageIndicator.setViewPager(gridField);
-			circlePageIndicator.setCurrentItem(gridFieldCurrentItem);
+				EditActivity.saveCurrentItem();
+				EditActivity.setCurrentGroupInfo(selectedGroupInfo);
+				int currentItem = EditActivity.getCurrentItem();
+
+				ContactController contactController = new ContactController(
+						mContext, EditActivity.getSelection(selectedGroupInfo));
+				contactController
+						.setOnItemClickListener(new EditGridItemClickListener(
+								mContext));
+
+				gridField.setAdapter(new CellPagerAdapter(contactController
+						.getGridFieldViews(4, 4)));
+				gridField.setCurrentItem(currentItem);
+				CirclePageIndicator circlePageIndicator = (CirclePageIndicator) ((Activity) mContext)
+						.findViewById(R.id.circle_page_indicator_grid);
+				circlePageIndicator.setViewPager(gridField);
+				circlePageIndicator.setCurrentItem(currentItem);
+			}
+
 			return;
 		} else {
 
@@ -90,14 +98,13 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 			for (; contactIdItr.hasNext();) {
 				int contactId = contactIdItr.next();
 
-				if (groupTitle == "All") {
+				if (selectedGroupTitle == "All") {
 					MainActivity.makeToast(mContext, "Clear all selection");
-					// SelectedItemList.INSTANCE.clear();
-
-					resetField();
+					SelectedItemList.INSTANCE.clear();
+					EditActivity.reDrawGridField();
 					return;
 
-				} else if (groupTitle == "Favorite") {
+				} else if (selectedGroupTitle == "Favorite") {
 					Log.d(TAG, "Favorite. contact Id: " + contactId);
 					op = ContentProviderOperation
 							.newUpdate(ContactsContract.Contacts.CONTENT_URI)
@@ -126,9 +133,8 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 				ContentProviderResult[] results = mContext.getContentResolver()
 						.applyBatch(ContactsContract.AUTHORITY, ops);
 
-				MainActivity.makeToast(mContext,
-						"Insert " + selectedPeopleCount + " people to "
-								+ groupCellInfo.getDisplayName());
+				MainActivity.makeToast(mContext, "Insert " + results.length
+						+ " people to " + selectedGroupInfo.getDisplayName());
 
 			}
 
@@ -138,36 +144,13 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			} finally {
-				resetField();
+				// resetField();
+				SelectedItemList.INSTANCE.clear();
+				EditActivity.reDrawGridField();
 
 			}
 
 		}
-	}
-
-	private void resetField() {
-
-		SelectedItemList.INSTANCE.clear();
-		EditActivity.saveGridFieldCurrentItem();
-
-		int gridFieldCurrentItem = EditActivity.getGridFieldCurrentItem();
-
-		ContactController contactController = new ContactController(mContext,
-				null);
-		contactController.setOnItemClickListener(new EditGridItemClickListener(
-				mContext));
-
-		ViewPager gridField = (ViewPager) ((Activity) mContext)
-				.findViewById(R.id.grid_field);
-		gridField.setAdapter(new CellPagerAdapter(contactController
-				.getGridFieldViews(4, 4)));
-		gridField.setCurrentItem(gridFieldCurrentItem);
-
-		CirclePageIndicator circlePageIndicator = (CirclePageIndicator) ((Activity) mContext)
-				.findViewById(R.id.circle_page_indicator_grid);
-		circlePageIndicator.setViewPager(gridField);
-		circlePageIndicator.setCurrentItem(gridFieldCurrentItem);
-
 	}
 
 	public static int getRawContactId(Context context, int contactId) {

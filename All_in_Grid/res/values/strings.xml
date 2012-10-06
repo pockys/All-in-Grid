@@ -16,5 +16,6 @@
     <string name="menu_icon">ICON</string>
     <string name="menu_disconnect">DISCONNECT</string>
     <string name="menu_shuffle_icons">ICON SHUFFLE</string>
-
+	<string name="menu_send_mail">SEND MAIL</string>
+	<string name="sort">SORT</string>
 </resources>

@@ -1,15 +1,21 @@
 package org.pockys.allingrid;
 
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.SortedSet;
 
 import android.app.AlertDialog;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,14 +39,14 @@ public class ContactController implements OnItemClickListener,
 	private Context mContext;
 	private Cursor mContactsCursor;
 	private OnItemClickListener mOnItemClickListener = this;
-	private String tab = "Fight";
 
 	private SharedPreferences sharedPreferences;
+	private SharedPreferences sortPreferences;
 
 	public ContactController(Context context) {
 		this(context, null);
-		// sharedPreferences = context.getSharedPreferences("sharePreferences",
-		// Context.MODE_PRIVATE);
+		sortPreferences = context.getSharedPreferences("sortPreferences",
+				Context.MODE_PRIVATE);
 	}
 
 	public ContactController(Context context, String selection) {
@@ -48,6 +54,9 @@ public class ContactController implements OnItemClickListener,
 		mContactsCursor = getContacts(selection);
 		sharedPreferences = context.getSharedPreferences("sharePreferences",
 				Context.MODE_PRIVATE);
+		sortPreferences = context.getSharedPreferences("sortPreferences",
+				Context.MODE_PRIVATE);
+
 	}
 
 	public int getSize() {
@@ -66,7 +75,7 @@ public class ContactController implements OnItemClickListener,
 					.getColumnIndex(ContactsContract.Data.PHOTO_URI));
 			String contactIdString = mContactsCursor.getString(mContactsCursor
 					.getColumnIndex(ContactsContract.Data.CONTACT_ID));
-
+			
 			Uri thumbnailUri = null;
 			if (uriString != null)
 				thumbnailUri = Uri.parse(uriString);
@@ -75,6 +84,7 @@ public class ContactController implements OnItemClickListener,
 			contact.setDisplayName(displayName);
 			contact.setThumbnail(thumbnailUri);
 			contact.setContactId(Integer.valueOf(contactIdString));
+			
 
 			contactsArrayList.add(contact);
 		}
@@ -85,13 +95,33 @@ public class ContactController implements OnItemClickListener,
 
 	private Cursor getContacts(String selection) {
 
-		Uri contactUri = ContactsContract.Data.CONTENT_URI;
-
 		String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
 				ContactsContract.Data.PHOTO_URI,
-				ContactsContract.Data.DISPLAY_NAME, };
-		String CONTACTS_SORT_ORDER = ContactsContract.Data.DISPLAY_NAME
-				+ " COLLATE LOCALIZED ASC";
+				ContactsContract.Data.DISPLAY_NAME,};
+
+//		Set<String> CONTACTS_SORT_ORDER = sortPreferences.getStringSet("sort", null);
+//		String temp = CONTACTS_SORT_ORDER.toString();
+//		
+//		if(temp == null){
+//			
+//		SharedPreferences.Editor editor = sortPreferences.edit();
+//		temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+//		editor.putString("sort", temp);
+//		editor.commit();
+//
+//		}
+
+		
+//		String CONTACTS_SORT_ORDER = ContactsContract.Data.DISPLAY_NAME
+//				+ " COLLATE LOCALIZED ASC";
+
+		String temp;
+		if(sortlib.INSTANCE.getCurrentSort() == 0){
+			temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+		}
+		else{
+			temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED DESC";
+		}
 
 		if (selection != null || selection == "")
 			selection += " AND ";
@@ -99,8 +129,9 @@ public class ContactController implements OnItemClickListener,
 			selection = "";
 
 		selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
-		return mContext.getContentResolver().query(contactUri, PROJECTION,
-				selection, null, CONTACTS_SORT_ORDER);
+		return mContext.getContentResolver().query(
+				ContactsContract.Data.CONTENT_URI, PROJECTION, selection, null,
+				temp);
 	}
 
 	public ArrayList<GridView> getGridFieldViews(final int numColumns,
@@ -139,7 +170,28 @@ public class ContactController implements OnItemClickListener,
 	@Override
 	public void onItemClick(AdapterView<?> parent, final View v, int position,
 			long id) {
+		
+		assert (v.getTag() instanceof ContactCellInfo) : "cellInfo is not instance of contact cellInfo!!";
+
+		ContactCellInfo cellInfo = (ContactCellInfo) v.getTag();
+
+		int contactId = cellInfo.getContactId();
+		String MailAdress = cellInfo.getMailAdress();
+		if (SelectedItemList.INSTANCE.contain(contactId)) {
+			v.setBackgroundColor(Color.TRANSPARENT);
+
+			SelectedItemList.INSTANCE.remove(contactId);
+		} else {
+			v.setBackgroundColor(Color.WHITE);
+
+			SelectedItemList.INSTANCE.add(contactId);
+			SelectedItemList.INSTANCE.addMail(MailAdress);
+		}
+		// EditActivity.reDrawGridField();
+
+		SelectedItemList.INSTANCE.logContactIdList(TAG);
 		// get contact uri from contact id
+		/*
 		ContactCellInfo contactCellInfo = (ContactCellInfo) v.getTag();
 		String contactIdString = String.valueOf(contactCellInfo.getContactId());
 		final Uri contactUri = Uri.withAppendedPath(
@@ -152,49 +204,99 @@ public class ContactController implements OnItemClickListener,
 		((ViewGroup) v).addView(badge);
 		badge.performClick();
 		((ViewGroup) v).removeView(badge);
-
+*/
 	}
 
-	@Override
-	public boolean onItemLongClick(AdapterView<?> arg0, View view, int arg2,
-			long arg3) {
 
+	@Override
+	public boolean onItemLongClick(AdapterView<?> parent, final View cell,
+			int position, long id) {
 		Log.d(TAG, "onItemLongClick");
 
-		final View cell = view;
-
-		assert (view.getTag() instanceof ContactCellInfo);
-		ContactCellInfo contactCellInfo = (ContactCellInfo) view.getTag();
+		assert (cell.getTag() instanceof ContactCellInfo);
+		final ContactCellInfo contactCellInfo = (ContactCellInfo) cell.getTag();
 
 		final int contactId = contactCellInfo.getContactId();
-
-		final CharSequence[] items = { "Change Icon", "Edit Profile" };
+		final boolean added = containFavorites(contactCellInfo);
 
 		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
-		FirstBuilder.setTitle("Pick a color");
-		OnClickListener listner = new OnClickListener() {
+		FirstBuilder.setTitle("Edit - " + contactCellInfo.getDisplayName());
+		ListView listView = new ListView(mContext);
+
+		listView.setAdapter(new BaseAdapter() {
+			final String[] items = { "Change Icon", "Edit Profile",
+					(added) ? "Remove from Favorites" : "Add to Favorites", };
 
 			@Override
-			public void onClick(final DialogInterface dia, int arg1) {
-				if (arg1 == 0) {
-					CustomAdapter adp = new CustomAdapter(mContext,
-							R.layout.row, 0);
+			public View getView(int position, View convertView, ViewGroup parent) {
+				TextView textView = null;
+				if (convertView == null) {
+					textView = (TextView) LayoutInflater.from(mContext)
+							.inflate(R.layout.list_view_item, null);
 
+				} else
+					textView = (TextView) convertView;
+
+				textView.setText(items[position]);
+
+				// Log.d(TAG, "textView text:  " + items[position]);
+
+				return textView;
+			}
+
+			@Override
+			public long getItemId(int position) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public Object getItem(int position) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public int getCount() {
+				// TODO Auto-generated method stub
+				return items.length;
+			}
+		});
+		FirstBuilder.setView(listView);
+		final AlertDialog firstDialog = FirstBuilder.create();
+		listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> container, View view,
+					int position, long id) {
+				firstDialog.dismiss();
+
+				if (position == 0) {
 					LayoutInflater inflater = LayoutInflater.from(mContext);
-					ListView lv = (ListView) inflater.inflate(
-							R.layout.listview, null);
 
-					lv.setAdapter(adp);
-					lv.setOnItemClickListener(new OnItemClickListener() {
+					GridView gridView = (GridView) inflater.inflate(
+							R.layout.grid_view, null);
+					gridView.setNumColumns(4);
+					gridView.setAdapter(new IconListAdapter(mContext, 0));
+
+					AlertDialog.Builder iconChangeDialog = new AlertDialog.Builder(
+							mContext);
+					iconChangeDialog.setTitle("Change Icon");
+					iconChangeDialog.setView(gridView);
+					final AlertDialog iconDialog = iconChangeDialog.create();
+
+					gridView.setOnItemClickListener(new OnItemClickListener() {
 
 						@Override
-						public void onItemClick(AdapterView<?> v, View arg1,
-								int arg2, long arg3) {
+						public void onItemClick(AdapterView<?> parent,
+								View view, int position, long id) {
+
+							iconDialog.dismiss();
 
 							IconInfo Samp = IconListLib.INSTANCE
-									.getAllIconInfo(arg2);
+									.getAllIconInfo(position);
 
-							Log.d(tab, "Check! ");
+							Log.d(TAG, "Check! ");
 
 							ImageView imageView = (ImageView) cell
 									.findViewById(R.id.cell_image);
@@ -202,10 +304,10 @@ public class ContactController implements OnItemClickListener,
 
 							SharedPreferences.Editor editor = sharedPreferences
 									.edit();
-							editor.putInt(Integer.toString(contactId), arg2);
+							editor.putInt(Integer.toString(contactId),Samp.getImage() );
 							editor.commit();
 
-							// test
+							// back to MainActivity
 							Intent intent = new Intent(mContext,
 									MainActivity.class);
 							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -215,143 +317,33 @@ public class ContactController implements OnItemClickListener,
 
 					});
 
-					AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-							mContext);
-
-					alertDialogBuilder.setTitle("Change Icon");
-					alertDialogBuilder.setView(lv);
-
-					alertDialogBuilder.create().show();
+					iconDialog.show();
 
 				}
 
-				else if (arg1 == 1) {
+				else if (position == 1) {
 
-					final CharSequence[] Categoryitems = { "All Shuffle",
-							"Category Shuffle" };
+					Intent intent = new Intent(Intent.ACTION_EDIT);
+					Uri contactUri = Uri.withAppendedPath(
+							ContactsContract.Contacts.CONTENT_URI, ""
+									+ contactId);
+					intent.setData(contactUri);
+					mContext.startActivity(intent);
 
-					AlertDialog.Builder CategoryBuilder = new AlertDialog.Builder(
-							mContext);
-					CategoryBuilder.setTitle("Icon Shuffle");
-					OnClickListener Categorylistner = new OnClickListener() {
+				} else if (position == 2) {
+					setFavorites(contactCellInfo, !added);
 
-						@Override
-						public void onClick(DialogInterface arg0, int arg1) {
-							if (arg1 == 0) {
-								IconListLib.INSTANCE.setCurrentCategoy(arg1);
-
-								SharedPreferences.Editor editor = sharedPreferences
-										.edit();
-								editor.clear();
-								editor.commit();
-
-								MenuController menuController = new MenuController(
-										mContext);
-								ContactController contactController = new ContactController(
-										mContext);
-								//
-								// Intent intent = new
-								// Intent(Intent.ACTION_EDIT);
-								// Uri contactUri = Uri.withAppendedPath(
-								// ContactsContract.Contacts.CONTENT_URI, ""
-								// + contactId);
-								// intent.setData(contactUri);
-								//
-								// ViewPager gridField = (ViewPager) ((Activity)
-								// mContext)
-								// .findViewById(R.id.grid_field);
-								// gridField.setAdapter(new
-								// CellPagerAdapter(contactController
-								// .getGridFieldViews(4, 4)));
-								//
-								// ViewPager menuField = (ViewPager) ((Activity)
-								// mContext)
-								// .findViewById(R.id.menu_field);
-								// menuField.setAdapter(new
-								// CellPagerAdapter(menuController
-								// .getMenuFieldViews(4)));
-								//
-								// MainActivity
-								// .makeToast(mContext,
-								// "All icons are shuffled!!");
-
-							} else if (arg1 == 1) {
-
-								CustomAdapter Sadp = new CustomAdapter(
-										mContext, R.layout.subrow, 1);
-
-								LayoutInflater inflater = LayoutInflater
-										.from(mContext);
-								ListView Sublv = (ListView) inflater.inflate(
-										R.layout.listview, null);
-
-								Sublv.setAdapter(Sadp);
-								Sublv.setOnItemClickListener(new OnItemClickListener() {
-
-									@Override
-									public void onItemClick(
-											AdapterView<?> arg0, View arg1,
-											int arg2, long arg3) {
-										IconListLib.INSTANCE
-												.setCurrentCategoy(arg2 + 1);
-
-										SharedPreferences.Editor editor = sharedPreferences
-												.edit();
-										editor.clear();
-										editor.commit();
-
-										// MenuController menuController = new
-										// MenuController(mContext);
-										// ContactController contactController =
-										// new ContactController(
-										// mContext);
-										//
-										// ViewPager gridField = (ViewPager)
-										// ((Activity) mContext)
-										// .findViewById(R.id.grid_field);
-										// gridField.setAdapter(new
-										// CellPagerAdapter(contactController
-										// .getGridFieldViews(4, 4)));
-										//
-										// ViewPager menuField = (ViewPager)
-										// ((Activity) mContext)
-										// .findViewById(R.id.menu_field);
-										// menuField.setAdapter(new
-										// CellPagerAdapter(menuController
-										// .getMenuFieldViews(4)));
-										//
-										// MainActivity
-										// .makeToast(mContext,
-										// "All icons are shuffled!!");
-
-									}
-
-								});
-
-								AlertDialog.Builder SubCategoryDialogBuilder = new AlertDialog.Builder(
-										mContext);
-
-								SubCategoryDialogBuilder
-										.setTitle("Change Icon");
-								SubCategoryDialogBuilder.setView(Sublv);
-
-								SubCategoryDialogBuilder.create().show();
-
-							}
-						}
-					};
-					CategoryBuilder.setItems(Categoryitems, Categorylistner);
-					CategoryBuilder.create().show();
-
-					// mContext.startActivity(intent);
-
+					if (MainActivity.getCurrentGroupInfo().getDisplayName() == "Favorite") {
+						MainActivity
+								.resetGridField(MenuController.FavoriteGroupCellInfo);
+					}
 				}
 
 			}
 
-		};
-		FirstBuilder.setItems(items, listner);
-		FirstBuilder.create().show();
+		});
+
+		firstDialog.show();
 
 		return false;
 
@@ -360,92 +352,61 @@ public class ContactController implements OnItemClickListener,
 	public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
 		mOnItemClickListener = onItemClickListener;
 	}
-}
 
-class CustomAdapter extends BaseAdapter {
+	public boolean containFavorites(ContactCellInfo contactInfo) {
+		String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
+				ContactsContract.Data.DISPLAY_NAME, };
 
-	LayoutInflater mLayoutInflater;
-	Context context;
-	String tag = "test";
-	int type;
+		String selection = ContactsContract.Contacts.STARRED + " = '1'";
+		selection += " AND " + ContactsContract.Contacts.IN_VISIBLE_GROUP
+				+ " = '1'";
+		selection += " AND " + ContactsContract.Data.CONTACT_ID + " = '"
+				+ contactInfo.getContactId() + "'";
+		Cursor cursor = mContext.getContentResolver().query(
+				ContactsContract.Data.CONTENT_URI, PROJECTION, selection, null,
+				null);
 
-	public CustomAdapter(Context _context, int resource, int t) {
-		super();
-		context = _context;
-		type = t;
+		int count = cursor.getCount();
+		cursor.close();
+
+		return (count > 0);
 	}
 
-	@Override
-	public View getView(int position, View v, ViewGroup parent) {
+	public void setFavorites(ContactCellInfo contactInfo, boolean add) {
 
-		if (type == 0) {
+		int contactId = contactInfo.getContactId();
 
-			mLayoutInflater = LayoutInflater.from(context);
-			if (v == null)
-				v = mLayoutInflater.inflate(R.layout.row, parent, false);
+		ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+		ops.add(ContentProviderOperation
+				.newUpdate(ContactsContract.Contacts.CONTENT_URI)
+				.withSelection(
+						ContactsContract.Contacts._ID + " = '" + contactId
+								+ "'", null)
+				.withValue(ContactsContract.Contacts.STARRED, (add) ? 1 : 0)
+				.build());
 
-			IconInfo icon = (IconInfo) getItem(position);
+		try {
+			ContentProviderResult[] results = mContext.getContentResolver()
+					.applyBatch(ContactsContract.AUTHORITY, ops);
 
-			TextView countrycode = (TextView) v.findViewById(R.id.countrycode);
-			countrycode.setText(icon.getName());
+			if (results == null) {
+				MainActivity.makeToast(mContext, "Something was wrong!!");
+			} else if (results.length > 0) {
 
-			TextView countryname = (TextView) v.findViewById(R.id.countryname);
-			countryname.setText(icon.getInfo());
+				String message = contactInfo.getDisplayName() + " is ";
+				message += (add) ? "added to Favorites"
+						: "removed from Favorites";
 
-			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
-			app_icon.setImageResource(icon.getImage());
-
+				MainActivity.makeToast(mContext, message);
+			}
 		}
 
-		else if (type == 1) {
-
-			mLayoutInflater = LayoutInflater.from(context);
-			if (v == null)
-				v = mLayoutInflater.inflate(R.layout.subrow, parent, false);
-
-			IconInfo icon = (IconInfo) getItem(position);
-
-			TextView countryname = (TextView) v.findViewById(R.id.countryname);
-			countryname.setText(icon.getInfo());
-
-			ImageView app_icon = (ImageView) v.findViewById(R.id.app_icon);
-			app_icon.setImageResource(icon.getImage());
-
+		catch (OperationApplicationException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		}
 
-		return v;
-
-	}
-
-	@Override
-	public int getCount() {
-		// TODO Auto-generated method stub
-
-		if (type == 0) {
-			return IconListLib.INSTANCE.getAllIconInfoSize();
-		} else {
-
-			return IconListLib.INSTANCE.getListViewIconInfoSize();
-
-		}
-	}
-
-	@Override
-	public Object getItem(int position) {
-		// TODO Auto-generated method stub
-
-		if (type == 0) {
-			return IconListLib.INSTANCE.getAllIconInfo(position);
-		} else {
-			return IconListLib.INSTANCE.getListViewIconInfo(position);
-
-		}
-	}
-
-	@Override
-	public long getItemId(int position) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }

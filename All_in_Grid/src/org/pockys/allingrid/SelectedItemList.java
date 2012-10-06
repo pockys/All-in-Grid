@@ -8,8 +8,10 @@ import android.util.Log;
 public enum SelectedItemList {
 	INSTANCE;
 
-	private ArrayList<Integer> mSelectedContactIdList = new ArrayList<Integer>();
+	private GroupCellInfo mSelectedGroupInfo = MenuController.AllGroupCellInfo;
 
+	private ArrayList<Integer> mSelectedContactIdList = new ArrayList<Integer>();
+	private ArrayList<String> mSelectedContactIdListMail = new ArrayList<String>();
 	public boolean contain(int contactId) {
 		return mSelectedContactIdList.contains(contactId);
 	}
@@ -25,9 +27,13 @@ public enum SelectedItemList {
 	public boolean remove(int contactId) {
 		return mSelectedContactIdList.remove(Integer.valueOf(contactId));
 	}
-
+	
 	public void add(int contactId) {
 		mSelectedContactIdList.add(contactId);
+	}
+	
+	public void addMail(String adress) {
+		mSelectedContactIdListMail.add(adress);
 	}
 
 	public void clear() {
@@ -44,4 +50,18 @@ public enum SelectedItemList {
 		Log.d(TAG, "mSelected ContactId List\n" + list);
 
 	}
+ 
+	public GroupCellInfo getSelectedGroupInfo() {
+		return mSelectedGroupInfo;
+	}
+
+	public void setSelectedGroupInfo(GroupCellInfo mSelectedGroupInfo) {
+		this.mSelectedGroupInfo = mSelectedGroupInfo;
+	}
+	
+	public ArrayList<Integer> getSelectedContactIdList(){
+	
+		return mSelectedContactIdList;
+	}
+	
 }

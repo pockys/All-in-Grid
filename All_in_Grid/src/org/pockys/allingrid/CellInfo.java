@@ -8,6 +8,8 @@ public class CellInfo {
 	protected Uri mThumbnailUri;
 	protected Bitmap mThumbnailBitmap;
 	protected int mResId = -1;
+	protected String mMailAdress;
+	
 
 	public String getDisplayName() {
 		return mDisplayName;
@@ -39,6 +41,14 @@ public class CellInfo {
 	
 	public int getThumbnailResId() {
 		return mResId;
+	}
+	
+	public void setMailAdress(String MailAdress) {
+		mMailAdress = MailAdress;
+	}
+	
+	public String getMailAdress() {
+		return mMailAdress;
 	}
 
 	public boolean isThereNoThumbnail() {
