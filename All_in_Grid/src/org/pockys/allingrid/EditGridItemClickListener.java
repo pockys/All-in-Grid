@@ -36,6 +36,15 @@ public class EditGridItemClickListener implements OnItemClickListener {
 			SelectedItemList.INSTANCE.add(contactId);
 		}
 		// EditActivity.reDrawGridField();
+<<<<<<< HEAD
+=======
+
+		if (SelectedItemList.INSTANCE.getSize() > 0) {
+			EditActivity.setDisconnectMenuVisibility(true);
+		} else {
+			EditActivity.setDisconnectMenuVisibility(false);
+		}
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 
 		SelectedItemList.INSTANCE.logContactIdList(TAG);
 	}

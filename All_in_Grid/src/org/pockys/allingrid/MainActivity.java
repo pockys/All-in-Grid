@@ -15,11 +15,17 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
+<<<<<<< HEAD
 import android.database.Cursor;
 import android.net.Uri;
+=======
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 import android.os.Bundle;
 import android.provider.ContactsContract;
+<<<<<<< HEAD
 import android.provider.ContactsContract.CommonDataKinds;
+=======
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,14 +47,22 @@ import com.viewpagerindicator.LinePageIndicator;
 public class MainActivity extends Activity{
 
 	static final String TAG = "MainActivity";
+<<<<<<< HEAD
 	
 	static final String TAG2 = "Check";
 	
 	private static final int MENU_SAMP = 0;
+=======
+	private static ViewPager mGridField;
+	private static ViewPager mMenuField;
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 
+<<<<<<< HEAD
 	private static ViewPager mGridField;
 	private static ViewPager mMenuField;
 
+=======
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 	private ActionBar mActionBar;
 
 	private int menuFieldCurrentItem = 0;
@@ -134,7 +148,11 @@ public class MainActivity extends Activity{
 		Log.d(TAG, "onStart");
 
 		mMenuController = new MenuController(this);
+<<<<<<< HEAD
 		mContactController = new ContactControllerMain(this,
+=======
+		mContactController = new ContactController(this,
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 				getSelection(getCurrentGroupInfo()));
 		// currentGridViewList = mContactController.getGridFieldViews(4, 4);
 
@@ -153,7 +171,13 @@ public class MainActivity extends Activity{
 
 	public void onResume() {
 		super.onResume();
+<<<<<<< HEAD
 		mActionBar.setTitle(currentGroupInfo.getDisplayName());
+=======
+
+		mActionBar.setTitle(currentGroupInfo.getDisplayName());
+
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 		mGridField.setCurrentItem(getCurrentItem());
 		mCirclePageIndicator.setCurrentItem(getCurrentItem());
 		mMenuField.setCurrentItem(menuFieldCurrentItem);
@@ -213,7 +237,11 @@ public class MainActivity extends Activity{
 			mActionBar.setDisplayHomeAsUpEnabled(false);
 			mActionBar.setTitle("All");
 
+<<<<<<< HEAD
 			mContactController = new ContactControllerMain(this, null);
+=======
+			mContactController = new ContactController(this, null);
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 			mGridField.setAdapter(new CellPagerAdapter(mContactController
 					.getGridFieldViews(4, 4)));
 			mGridField.setCurrentItem(getCurrentItem());
@@ -271,7 +299,14 @@ if(currentGroupTitle != "All"){
 			resetGridField(MenuController.AllGroupCellInfo);
 
 			break;
+<<<<<<< HEAD
 
+=======
+		// case R.id.menu_phone:
+		// intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
+		// startActivity(intent);
+		// break;
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 		case R.id.menu_edit:
 			intent = new Intent(this, EditActivity.class);
 			startActivity(intent);
@@ -538,7 +573,13 @@ if(currentGroupTitle != "All"){
 										}
 									}
 								}
+<<<<<<< HEAD
 								
+=======
+								// }
+
+								// editor.clear();
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 								editor.commit();
 
 								resetGridField();
@@ -588,10 +629,20 @@ if(currentGroupTitle != "All"){
 			GridView currentGridView = (GridView) mGridField.getChildAt(i);
 			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
 			adapter.notifyDataSetChanged();
+<<<<<<< HEAD
+=======
 
 		}
 	}
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
+
+<<<<<<< HEAD
+		}
+	}
  static void reDrawMenuField() {
+=======
+	public static void reDrawMenuField() {
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 		for (int i = 0; i < mMenuField.getChildCount(); i++) {
 			GridView currentGridView = (GridView) mMenuField.getChildAt(i);
 			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());

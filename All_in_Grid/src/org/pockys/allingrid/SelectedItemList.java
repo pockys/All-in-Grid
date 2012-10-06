@@ -9,6 +9,11 @@ public enum SelectedItemList {
 	INSTANCE;
 
 	private GroupCellInfo mSelectedGroupInfo = MenuController.AllGroupCellInfo;
+<<<<<<< HEAD
+=======
+
+	private ArrayList<Integer> mSelectedContactIdList = new ArrayList<Integer>();
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 
 	private ArrayList<Integer> mSelectedContactIdList = new ArrayList<Integer>();
 	private ArrayList<String> mSelectedContactIdListMail = new ArrayList<String>();
@@ -29,11 +34,16 @@ public enum SelectedItemList {
 	}
 	
 	public void add(int contactId) {
+<<<<<<< HEAD
 		mSelectedContactIdList.add(contactId);
 	}
 	
 	public void addMail(String adress) {
 		mSelectedContactIdListMail.add(adress);
+=======
+		if (!mSelectedContactIdList.contains(contactId))
+			mSelectedContactIdList.add(contactId);
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 	}
 
 	public void clear() {
@@ -50,6 +60,7 @@ public enum SelectedItemList {
 		Log.d(TAG, "mSelected ContactId List\n" + list);
 
 	}
+<<<<<<< HEAD
  
 	public GroupCellInfo getSelectedGroupInfo() {
 		return mSelectedGroupInfo;
@@ -64,4 +75,15 @@ public enum SelectedItemList {
 		return mSelectedContactIdList;
 	}
 	
+=======
+
+	public GroupCellInfo getSelectedGroupInfo() {
+		return mSelectedGroupInfo;
+	}
+
+	public void setSelectedGroupInfo(GroupCellInfo mSelectedGroupInfo) {
+		this.mSelectedGroupInfo = mSelectedGroupInfo;
+	}
+
+>>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 }

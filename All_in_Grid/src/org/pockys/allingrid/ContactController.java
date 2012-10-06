@@ -99,21 +99,6 @@ public class ContactController implements OnItemClickListener,
 				ContactsContract.Data.PHOTO_URI,
 				ContactsContract.Data.DISPLAY_NAME,};
 
-//		Set<String> CONTACTS_SORT_ORDER = sortPreferences.getStringSet("sort", null);
-//		String temp = CONTACTS_SORT_ORDER.toString();
-//		
-//		if(temp == null){
-//			
-//		SharedPreferences.Editor editor = sortPreferences.edit();
-//		temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
-//		editor.putString("sort", temp);
-//		editor.commit();
-//
-//		}
-
-		
-//		String CONTACTS_SORT_ORDER = ContactsContract.Data.DISPLAY_NAME
-//				+ " COLLATE LOCALIZED ASC";
 
 		String temp;
 		if(sortlib.INSTANCE.getCurrentSort() == 0){

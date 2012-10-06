@@ -1,16 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
+ 
     <item
         android:id="@+id/menu_phone"
         android:icon="@drawable/ic_action_phone"
         android:showAsAction="always"
         android:title="@string/menu_phone"/>
-    
-    <item
-        android:id="@+id/send_mail"
-        android:showAsAction="always"
-        android:icon="@drawable/ic_action_mail"
-        android:title="@string/menu_send_mail"/>
+
     <item
         android:id="@+id/menu_edit"
         android:showAsAction="always|withText"
@@ -32,14 +29,5 @@
     
    
     
-    
-    <!--
-    <item
-        android:id="@+id/menu_search"
-        android:actionViewClass="android.widget.SearchView"
-        android:icon="@drawable/ic_menu_search"
-        android:showAsAction="ifRoom|collapseActionView"
-        android:title="@string/menu_search"/>
-    -->
 
 </menu>
