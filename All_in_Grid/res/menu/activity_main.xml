@@ -1,33 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <item
+        android:id="@+id/manual"
+        android:showAsAction="never|withText"
+        android:title="@string/manual"/>
+    
+    <item
+        android:id="@+id/sort"
+        android:showAsAction="never|withText"
+        android:title="@string/sort"/>
 
- 
+ 	<item 
+ 	    android:title="@string/menu_send_mail"
+ 	    android:showAsAction="ifRoom|withText"  
+ 	    android:id="@+id/send_mail"/>
+ 	
     <item
         android:id="@+id/menu_phone"
-        android:icon="@drawable/ic_action_phone"
-        android:showAsAction="always"
+        android:showAsAction="ifRoom|withText"
         android:title="@string/menu_phone"/>
 
+    <item
+        android:id="@+id/menu_all_select"
+        android:showAsAction="withText"
+        android:title="@string/menu_all_select"/>
+    
+    <item
+        android:id="@+id/menu_all_clear"
+        android:showAsAction="withText"
+        android:title="@string/menu_all_clear"/>
+    
     <item
         android:id="@+id/menu_edit"
         android:showAsAction="always|withText"
         android:title="@string/menu_edit"/>
-    <item
-        android:id="@+id/menu_add"
-        android:icon="@drawable/ic_menu_add_group"
-        android:showAsAction="never|withText"
-        android:title="@string/menu_add"/>
-    <item
-        android:id="@+id/menu_shuffle_icons"
-        android:showAsAction="never"
-        android:title="@string/menu_shuffle_icons"/>
-
- 	<item
-        android:id="@+id/sort"
-        android:showAsAction="always|withText"
-        android:title="@string/sort"/>
     
-   
+     
+      	
+     
     
-
 </menu>

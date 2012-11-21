@@ -2,13 +2,13 @@ package org.pockys.allingrid;
 
 public class GroupCellInfo extends CellInfo {
 
-	private int groupId;
+	private String groupId;
 
-	public int getGroupId() {
+	public String getGroupId() {
 		return groupId;
 	}
 
-	public void setGroupId(int groupId) {
+	public void setGroupId(String groupId) {
 		this.groupId = groupId;
 	}
 

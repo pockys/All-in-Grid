@@ -2,13 +2,13 @@ package org.pockys.allingrid;
 
 public class ContactCellInfo extends CellInfo {
 
-	private int contactId;
+	private String contactId;
 
-	public int getContactId() {
+	public String getContactId() {
 		return contactId;
 	}
 
-	public void setContactId(int contactId) {
+	public void setContactId(String contactId) {
 		this.contactId = contactId;
 	}
 }

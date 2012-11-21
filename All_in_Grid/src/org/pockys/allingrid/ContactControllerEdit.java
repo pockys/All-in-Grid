@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.Context;
@@ -31,7 +32,7 @@ import android.widget.ListView;
 import android.widget.QuickContactBadge;
 import android.widget.TextView;
 
-public class ContactController implements OnItemClickListener,
+public class ContactControllerEdit implements OnItemClickListener,
 		OnItemLongClickListener {
 
 	private static final String TAG = "ContactController";
@@ -41,22 +42,22 @@ public class ContactController implements OnItemClickListener,
 	private OnItemClickListener mOnItemClickListener = this;
 
 	private SharedPreferences sharedPreferences;
-	private SharedPreferences sortPreferences;
+	public SharedPreferences AllIcon;
+	public int GridCount;
 
-	public ContactController(Context context) {
-		this(context, null);
-		sortPreferences = context.getSharedPreferences("sortPreferences",
-				Context.MODE_PRIVATE);
+	public ContactControllerEdit(Context context) {
+		this(context, null);	
+		GridCount = 0;
 	}
 
-	public ContactController(Context context, String selection) {
+	public ContactControllerEdit(Context context, String selection) {
 		mContext = context;
 		mContactsCursor = getContacts(selection);
 		sharedPreferences = context.getSharedPreferences("sharePreferences",
 				Context.MODE_PRIVATE);
-		sortPreferences = context.getSharedPreferences("sortPreferences",
+		AllIcon = context.getSharedPreferences("AllIcon",
 				Context.MODE_PRIVATE);
-
+		GridCount = 0;
 	}
 
 	public int getSize() {
@@ -70,20 +71,17 @@ public class ContactController implements OnItemClickListener,
 		for (int i = 0; mContactsCursor.moveToNext() && i < maxSize; i++) {
 
 			String displayName = mContactsCursor.getString(mContactsCursor
-					.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
-			String uriString = mContactsCursor.getString(mContactsCursor
-					.getColumnIndex(ContactsContract.Data.PHOTO_URI));
+					.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
 			String contactIdString = mContactsCursor.getString(mContactsCursor
 					.getColumnIndex(ContactsContract.Data.CONTACT_ID));
 			
 			Uri thumbnailUri = null;
-			if (uriString != null)
-				thumbnailUri = Uri.parse(uriString);
 
+			
 			ContactCellInfo contact = new ContactCellInfo();
 			contact.setDisplayName(displayName);
 			contact.setThumbnail(thumbnailUri);
-			contact.setContactId(Integer.valueOf(contactIdString));
+			contact.setContactId(contactIdString);
 			
 
 			contactsArrayList.add(contact);
@@ -95,17 +93,17 @@ public class ContactController implements OnItemClickListener,
 
 	private Cursor getContacts(String selection) {
 
-		String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
-				ContactsContract.Data.PHOTO_URI,
-				ContactsContract.Data.DISPLAY_NAME,};
+		String[] PROJECTION = new String[] { ContactsContract.Contacts.DISPLAY_NAME,
+//				ContactsContract.Data.PHOTO_ID,
+				ContactsContract.Data.CONTACT_ID,};
 
 
 		String temp;
-		if(sortlib.INSTANCE.getCurrentSort() == 0){
-			temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+		if(IconListLib.INSTANCE.getCurrentSort() == 0){
+			temp =	ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
 		}
 		else{
-			temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED DESC";
+			temp =	ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED DESC";
 		}
 
 		if (selection != null || selection == "")
@@ -135,7 +133,10 @@ public class ContactController implements OnItemClickListener,
 			gridView.setOnItemLongClickListener(this);
 
 			gridViewList.add(gridView);
+			
+			GridCount++;
 		}
+		GridCount = GridCount*15;
 		if (this.getSize() % numCells != 0) {
 			GridView gridView = (GridView) LayoutInflater.from(mContext)
 					.inflate(R.layout.grid_view, null);
@@ -146,10 +147,16 @@ public class ContactController implements OnItemClickListener,
 			gridView.setOnItemLongClickListener(this);
 
 			gridViewList.add(gridView);
+			GridCount = GridCount + this.getSize() % numCells;
 		}
 		mContactsCursor.close();
 
 		return gridViewList;
+	}
+	
+	
+	public int getcount(){
+		return GridCount;
 	}
 
 	@Override
@@ -160,36 +167,23 @@ public class ContactController implements OnItemClickListener,
 
 		ContactCellInfo cellInfo = (ContactCellInfo) v.getTag();
 
-		int contactId = cellInfo.getContactId();
+		String contactId = cellInfo.getContactId();
 		String MailAdress = cellInfo.getMailAdress();
-		if (SelectedItemList.INSTANCE.contain(contactId)) {
+		if (SelectedItemList.INSTANCE.contain(Integer.getInteger(contactId))) {
 			v.setBackgroundColor(Color.TRANSPARENT);
 
-			SelectedItemList.INSTANCE.remove(contactId);
+			SelectedItemList.INSTANCE.remove(Integer.getInteger(contactId));
 		} else {
 			v.setBackgroundColor(Color.WHITE);
 
-			SelectedItemList.INSTANCE.add(contactId);
+			SelectedItemList.INSTANCE.add(Integer.getInteger(contactId));
 			SelectedItemList.INSTANCE.addMail(MailAdress);
 		}
 		// EditActivity.reDrawGridField();
-
+		
+		
 		SelectedItemList.INSTANCE.logContactIdList(TAG);
-		// get contact uri from contact id
-		/*
-		ContactCellInfo contactCellInfo = (ContactCellInfo) v.getTag();
-		String contactIdString = String.valueOf(contactCellInfo.getContactId());
-		final Uri contactUri = Uri.withAppendedPath(
-				ContactsContract.Contacts.CONTENT_URI,
-				Uri.encode(contactIdString));
 
-		final QuickContactBadge badge = new QuickContactBadge(mContext);
-		badge.assignContactUri(contactUri);
-		badge.setMode(ContactsContract.QuickContact.MODE_LARGE);
-		((ViewGroup) v).addView(badge);
-		badge.performClick();
-		((ViewGroup) v).removeView(badge);
-*/
 	}
 
 
@@ -201,16 +195,16 @@ public class ContactController implements OnItemClickListener,
 		assert (cell.getTag() instanceof ContactCellInfo);
 		final ContactCellInfo contactCellInfo = (ContactCellInfo) cell.getTag();
 
-		final int contactId = contactCellInfo.getContactId();
+		final String contactId = contactCellInfo.getContactId();
 		final boolean added = containFavorites(contactCellInfo);
 
-		AlertDialog.Builder FirstBuilder = new AlertDialog.Builder(mContext);
-		FirstBuilder.setTitle("Edit - " + contactCellInfo.getDisplayName());
+		AlertDialog.Builder MenuBuilder = new AlertDialog.Builder(mContext);
+		MenuBuilder.setTitle("Edit - " + contactCellInfo.getDisplayName());
 		ListView listView = new ListView(mContext);
 
 		listView.setAdapter(new BaseAdapter() {
-			final String[] items = { "Change Icon", "Edit Profile",
-					(added) ? "Remove from Favorites" : "Add to Favorites", };
+			final String[] items = { "アイコンチェンジ", "アドレスへんしゅう",
+					(added) ? "お気に入りからはずす" : "お気に入りにくわえる", };
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
@@ -247,28 +241,28 @@ public class ContactController implements OnItemClickListener,
 				return items.length;
 			}
 		});
-		FirstBuilder.setView(listView);
-		final AlertDialog firstDialog = FirstBuilder.create();
+		MenuBuilder.setView(listView);
+		final AlertDialog MenuDialog = MenuBuilder.create();
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> container, View view,
 					int position, long id) {
-				firstDialog.dismiss();
-
+				
 				if (position == 0) {
+					MenuDialog.dismiss();
 					LayoutInflater inflater = LayoutInflater.from(mContext);
 
 					GridView gridView = (GridView) inflater.inflate(
-							R.layout.grid_view, null);
+					R.layout.grid_view, null);
 					gridView.setNumColumns(4);
 					gridView.setAdapter(new IconListAdapter(mContext, 0));
 
-					AlertDialog.Builder iconChangeDialog = new AlertDialog.Builder(
+					AlertDialog.Builder SingleiconChangeDialog = new AlertDialog.Builder(
 							mContext);
-					iconChangeDialog.setTitle("Change Icon");
-					iconChangeDialog.setView(gridView);
-					final AlertDialog iconDialog = iconChangeDialog.create();
+					SingleiconChangeDialog.setTitle("アイコン チェンジ");
+					SingleiconChangeDialog.setView(gridView);
+					final AlertDialog SingleiconChange = SingleiconChangeDialog.create();
 
 					gridView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -276,10 +270,14 @@ public class ContactController implements OnItemClickListener,
 						public void onItemClick(AdapterView<?> parent,
 								View view, int position, long id) {
 
-							iconDialog.dismiss();
+							SingleiconChange.dismiss();
+							
+							
+							IconInfo Samp = new IconInfo(AllIcon.getInt(Integer.toString(position + 1), -1), null);
 
-							IconInfo Samp = IconListLib.INSTANCE
-									.getAllIconInfo(position);
+
+//							IconInfo Samp = IconListLib.INSTANCE
+//									.getAllIconInfo(position);
 
 							Log.d(TAG, "Check! ");
 
@@ -289,32 +287,29 @@ public class ContactController implements OnItemClickListener,
 
 							SharedPreferences.Editor editor = sharedPreferences
 									.edit();
-							editor.putInt(Integer.toString(contactId),Samp.getImage() );
+							editor.putInt(contactId,Samp.getImage() );
 							editor.commit();
-
+//
 							// back to MainActivity
-							Intent intent = new Intent(mContext,
-									MainActivity.class);
-							intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-							mContext.startActivity(intent);
-
+							EditActivity.reDrawGridField();
+							EditActivity.reDrawMenuField();
 						}
 
 					});
-
-					iconDialog.show();
+					SingleiconChange.show();
 
 				}
 
 				else if (position == 1) {
-
+					
 					Intent intent = new Intent(Intent.ACTION_EDIT);
 					Uri contactUri = Uri.withAppendedPath(
 							ContactsContract.Contacts.CONTENT_URI, ""
 									+ contactId);
 					intent.setData(contactUri);
 					mContext.startActivity(intent);
-
+					
+					
 				} else if (position == 2) {
 					setFavorites(contactCellInfo, !added);
 
@@ -322,13 +317,14 @@ public class ContactController implements OnItemClickListener,
 						MainActivity
 								.resetGridField(MenuController.FavoriteGroupCellInfo);
 					}
+					
 				}
 
 			}
 
 		});
 
-		firstDialog.show();
+		MenuDialog.show();
 
 		return false;
 
@@ -359,7 +355,7 @@ public class ContactController implements OnItemClickListener,
 
 	public void setFavorites(ContactCellInfo contactInfo, boolean add) {
 
-		int contactId = contactInfo.getContactId();
+		String contactId = contactInfo.getContactId();
 
 		ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
 		ops.add(ContentProviderOperation
@@ -375,14 +371,14 @@ public class ContactController implements OnItemClickListener,
 					.applyBatch(ContactsContract.AUTHORITY, ops);
 
 			if (results == null) {
-				MainActivity.makeToast(mContext, "Something was wrong!!");
+	
 			} else if (results.length > 0) {
 
 				String message = contactInfo.getDisplayName() + " is ";
 				message += (add) ? "added to Favorites"
 						: "removed from Favorites";
 
-				MainActivity.makeToast(mContext, message);
+	
 			}
 		}
 

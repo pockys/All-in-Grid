@@ -3,6 +3,7 @@ package org.pockys.allingrid;
 import java.util.ArrayList;
 
 import android.app.ActionBar;
+//import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
@@ -29,16 +30,18 @@ public class MenuController implements OnItemClickListener {
 	static {
 		AllGroupCellInfo = new GroupCellInfo();
 		AllGroupCellInfo.setDisplayName("All");
-		AllGroupCellInfo.setThumbnail(R.drawable.ic_all);
+		AllGroupCellInfo.setThumbnail(R.drawable.ic_group_all002);
+		AllGroupCellInfo.setGroupId("1000");
 
 		FavoriteGroupCellInfo = new GroupCellInfo();
 		FavoriteGroupCellInfo.setDisplayName("Favorite");
-		FavoriteGroupCellInfo.setThumbnail(R.drawable.ic_favorite);
+		FavoriteGroupCellInfo.setThumbnail(R.drawable.ic_group_favorite002);
+		FavoriteGroupCellInfo.setGroupId("1001");
 	}
 
 	private Context mContext;
 	private Cursor mGroupTitleCursor;
-	private OnItemClickListener mOnItemClickListener = this;
+	protected OnItemClickListener mOnItemClickListener = this;
 
 	public int getSize() {
 		return mGroupTitleCursor.getCount();
@@ -49,7 +52,7 @@ public class MenuController implements OnItemClickListener {
 		mGroupTitleCursor = getGroupTitles();
 	}
 
-	private Cursor getGroupTitles() {
+	public Cursor getGroupTitles() {
 		final String[] GROUP_PROJECTION = new String[] {
 				ContactsContract.Groups._ID, ContactsContract.Groups.TITLE,
 
@@ -70,7 +73,7 @@ public class MenuController implements OnItemClickListener {
 			boolean onlyNotEmpty) {
 
 		String groupTitle = groupInfo.getDisplayName();
-		int groupId = groupInfo.getGroupId();
+		String groupId = groupInfo.getGroupId();
 
 		if (groupTitle.equals("All") || groupTitle.equals("Favorite")) {
 			return 0;
@@ -80,7 +83,7 @@ public class MenuController implements OnItemClickListener {
 		for (int i = 0; cursor.moveToNext(); i++) {
 			if (cursor.getString(
 					cursor.getColumnIndex(ContactsContract.Groups._ID)).equals(
-					String.valueOf(groupId)))
+					groupId))
 				return (i + 2) / maxSize;
 		}
 
@@ -89,7 +92,7 @@ public class MenuController implements OnItemClickListener {
 
 	private int menuListCount = 0;
 
-	private ArrayList<CellInfo> getMenuList(int maxSize) {
+	public ArrayList<CellInfo> getMenuList(int maxSize) {
 
 		ArrayList<CellInfo> menuList = new ArrayList<CellInfo>();
 
@@ -107,41 +110,18 @@ public class MenuController implements OnItemClickListener {
 			String groupIdString = mGroupTitleCursor
 					.getString(mGroupTitleCursor
 							.getColumnIndex(ContactsContract.Groups._ID));
-			int groupId = Integer.valueOf(groupIdString);
 
 			GroupCellInfo group = new GroupCellInfo();
 			group.setDisplayName(displayName);
-			group.setThumbnail(R.drawable.ic_user_group);
-			group.setGroupId(groupId);
+			group.setThumbnail(R.drawable.ic_group3_002);
+			group.setGroupId(groupIdString);
 			menuList.add(group);
 		}
 
 		return menuList;
 	}
 
-	// public boolean isEmptyGroup(int groupId) {
-	//
-	// String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
-	// // ContactsContract.Data.PHOTO_URI,
-	// // ContactsContract.Data.DISPLAY_NAME,
-	//
-	// };
-	//
-	// String selection =
-	// // ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID
-	// ContactsContract.Groups._ID + " = '" + groupId + " '";
-	// selection += " AND " + ContactsContract.Contacts.IN_VISIBLE_GROUP
-	// + " = '1'";
-	// Cursor cursor = mContext.getContentResolver().query(
-	// ContactsContract.Data.CONTENT_URI, null, selection, null,
-	// null);
-	//
-	// int count = cursor.getCount();
-	// cursor.close();
-	//
-	// return (count == 0);
-	//
-	// }
+
 
 	public ArrayList<GridView> getMenuFieldViews(final int numColumns) {
 		ArrayList<GridView> menuViewList = new ArrayList<GridView>();
@@ -191,9 +171,9 @@ public class MenuController implements OnItemClickListener {
 		actionBar.setTitle(selectedGroupTitle);
 
 		if (selectedGroupInfo.equals(MenuController.AllGroupCellInfo)) {
-			actionBar.setDisplayHomeAsUpEnabled(false);
+//			actionBar.setDisplayHomeAsUpEnabled(false);
 		} else {
-			actionBar.setDisplayHomeAsUpEnabled(true);
+//			actionBar.setDisplayHomeAsUpEnabled(true);
 		}
 
 		if (selectedGroupInfo.equals(currentGroupInfo)) {
@@ -205,7 +185,7 @@ public class MenuController implements OnItemClickListener {
 			MainActivity.setCurrentGroupInfo(selectedGroupInfo);
 			int currentItem = MainActivity.getCurrentItem();
 
-			ContactController contactController = new ContactController(
+			ContactControllerMain contactController = new ContactControllerMain(
 					mContext, MainActivity.getSelection(selectedGroupInfo));
 
 			gridField.setAdapter(new CellPagerAdapter(contactController
@@ -220,6 +200,7 @@ public class MenuController implements OnItemClickListener {
 		Log.d(TAG, "clicked group: " + selectedGroupInfo.getDisplayName()
 				+ " current item: " + MainActivity.getCurrentItem());
 	}
+	
 
 	public OnItemClickListener getOnItemClickListener() {
 		return mOnItemClickListener;
@@ -228,5 +209,7 @@ public class MenuController implements OnItemClickListener {
 	public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
 		this.mOnItemClickListener = mOnItemClickListener;
 	}
+
+
 
 }

@@ -1,9 +1,13 @@
 package org.pockys.allingrid;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class EditGridItemClickListener implements OnItemClickListener {
@@ -25,27 +29,45 @@ public class EditGridItemClickListener implements OnItemClickListener {
 
 		ContactCellInfo cellInfo = (ContactCellInfo) view.getTag();
 
-		int contactId = cellInfo.getContactId();
-		if (SelectedItemList.INSTANCE.contain(contactId)) {
+		String contactId = cellInfo.getContactId();
+		if (SelectedItemList.INSTANCE.contain(Integer.valueOf(contactId))) {
 			view.setBackgroundColor(Color.TRANSPARENT);
 
-			SelectedItemList.INSTANCE.remove(contactId);
+			SelectedItemList.INSTANCE.remove(Integer.valueOf(contactId));
 		} else {
 			view.setBackgroundColor(BACKGROUND_COLOR);
 
-			SelectedItemList.INSTANCE.add(contactId);
+			SelectedItemList.INSTANCE.add(Integer.valueOf(contactId));
 		}
 		// EditActivity.reDrawGridField();
-<<<<<<< HEAD
-=======
-
+		GroupCellInfo currentGroupInfo;
+		currentGroupInfo = EditActivity.getCurrentGroupInfo();
+		ContactControllerEdit contactController = new ContactControllerEdit(mContext,
+				EditActivity.getSelection(currentGroupInfo));
+		ArrayList<GridView> gridViewList = contactController
+				.getGridFieldViews(4, 4);
+		int GridCount = contactController.getcount();
 		if (SelectedItemList.INSTANCE.getSize() > 0) {
+			
+			
+			EditActivity.setAllClearVisibility(true);
+			EditActivity.setAllselectVisibility(true);
 			EditActivity.setDisconnectMenuVisibility(true);
-		} else {
-			EditActivity.setDisconnectMenuVisibility(false);
-		}
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
-
+			if((GridCount + 1)==SelectedItemList.INSTANCE.getSize() ){
+				EditActivity.setAllselectVisibility(false);
+					
+			}
+	
+	} 
+	else {
+		EditActivity.setAllselectVisibility(true);
+		EditActivity.setAllClearVisibility(false);
+		EditActivity.setDisconnectMenuVisibility(false);
+	}
 		SelectedItemList.INSTANCE.logContactIdList(TAG);
+	}
+		
+	public static void makeToast(Context context, String message) {
+		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
 }

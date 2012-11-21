@@ -11,13 +11,7 @@ import android.widget.GridView;
 
 public class CellPagerAdapter extends PagerAdapter {
 
-	private static final String TAG = "ContactPagerAdapter";
 
-	// private final int mNumColumns;
-	// private final int mNumRows;
-	// private final int mNumCells;
-	// private Context mContext;
-	// private Cursor mContactsCursor;
  
 	private ArrayList<GridView> mPagedViews = new ArrayList<GridView>();
 

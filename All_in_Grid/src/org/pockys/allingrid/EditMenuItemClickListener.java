@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import android.app.ActionBar;
+//import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.Activity;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.os.RemoteException;
@@ -16,32 +19,38 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 import com.viewpagerindicator.CirclePageIndicator;
 
-public class EditMenuItemClickListener implements OnItemClickListener {
+public class EditMenuItemClickListener implements OnItemClickListener{
 
 	public static final String TAG = "EditMenuItemClickListener";
 
 	private Context mContext;
+	
 
 	public EditMenuItemClickListener(Context context) {
 		mContext = context;
-
+		
 	}
 
+	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
 			long id) {
-
+		
+		Log.d(TAG, "Test listner");
 		int selectedPeopleCount = SelectedItemList.INSTANCE.getSize();
 
+		
 		assert (view.getTag() instanceof GroupCellInfo) : " is not instance of GroupCellInfo!!";
-		GroupCellInfo selectedGroupInfo = (GroupCellInfo) view.getTag();
-		String selectedGroupTitle = selectedGroupInfo.getDisplayName();
-		int groupId = selectedGroupInfo.getGroupId();
- 
+		final GroupCellInfo selectedGroupInfo = (GroupCellInfo) view.getTag();
+		final String selectedGroupTitle = selectedGroupInfo.getDisplayName();
+		final String groupId = selectedGroupInfo.getGroupId();
+		
 		ActionBar actionBar = ((Activity) mContext).getActionBar();
 
 		if (selectedPeopleCount == 0) {
@@ -71,7 +80,7 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 				EditActivity.setCurrentGroupInfo(selectedGroupInfo);
 				int currentItem = EditActivity.getCurrentItem();
 
-				ContactController contactController = new ContactController(
+				ContactControllerEdit contactController = new ContactControllerEdit(
 						mContext, EditActivity.getSelection(selectedGroupInfo));
 				contactController
 						.setOnItemClickListener(new EditGridItemClickListener(
@@ -88,69 +97,93 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 
 			return;
 		} else {
-
-			// insert
-			ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-			ContentProviderOperation.Builder op;
-
-			Iterator<Integer> contactIdItr = SelectedItemList.INSTANCE
-					.getIterator();
-			for (; contactIdItr.hasNext();) {
-				int contactId = contactIdItr.next();
-
-				if (selectedGroupTitle == "All") {
-					MainActivity.makeToast(mContext, "Clear all selection");
-					SelectedItemList.INSTANCE.clear();
-					EditActivity.reDrawGridField();
-					return;
-
-				} else if (selectedGroupTitle == "Favorite") {
-					Log.d(TAG, "Favorite. contact Id: " + contactId);
-					op = ContentProviderOperation
-							.newUpdate(ContactsContract.Contacts.CONTENT_URI)
-							.withSelection(
-									ContactsContract.Contacts._ID + " = '"
-											+ contactId + "'", null)
-							.withValue(ContactsContract.Contacts.STARRED, 1);
-					ops.add(op.build());
-
-				} else {
-					op = ContentProviderOperation
-							.newInsert(ContactsContract.Data.CONTENT_URI)
-							.withValue(ContactsContract.Data.RAW_CONTACT_ID,
-									getRawContactId(mContext, contactId))
-							.withValue(ContactsContract.Data.MIMETYPE,
-									ContactsContract.Data.CONTENT_TYPE)
-							.withValue(
-									ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
-									groupId);
-					ops.add(op.build());
+			AlertDialog.Builder Insert = new AlertDialog.Builder(mContext);
+			Insert.setTitle(selectedGroupTitle + "グループに "+ SelectedItemList.INSTANCE.getSize()+
+					" 人追加しますか ??");
+			Insert.setPositiveButton("ちょっとまった！", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+				dialog.cancel();	
 				}
+			});
+			Insert.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// insert
+					ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+					ContentProviderOperation.Builder op;
 
-			}
+					Iterator<Integer> contactIdItr = SelectedItemList.INSTANCE
+							.getIterator();
+					for (; contactIdItr.hasNext();) {
+						int contactId = contactIdItr.next();
 
-			try {
-				ContentProviderResult[] results = mContext.getContentResolver()
-						.applyBatch(ContactsContract.AUTHORITY, ops);
+						if (selectedGroupTitle == "All") {
+							MainActivity.makeToast(mContext, "全せんたくかいじょ");
+							SelectedItemList.INSTANCE.clear();
+							EditActivity.reDrawGridField();
+							return;
 
-				MainActivity.makeToast(mContext, "Insert " + results.length
-						+ " people to " + selectedGroupInfo.getDisplayName());
+						} else if (selectedGroupTitle == "Favorite") {
+							Log.d(TAG, "Favorite. contact Id: " + contactId);
+							op = ContentProviderOperation
+									.newUpdate(ContactsContract.Contacts.CONTENT_URI)
+									.withSelection(
+											ContactsContract.Contacts._ID + " = '"
+													+ contactId + "'", null)
+									.withValue(ContactsContract.Contacts.STARRED, 1);
+							ops.add(op.build());
 
-			}
+						} else {
+							op = ContentProviderOperation
+									.newInsert(ContactsContract.Data.CONTENT_URI)
+									.withValue(ContactsContract.Data.RAW_CONTACT_ID,
+											getRawContactId(mContext, contactId))
+									.withValue(ContactsContract.Data.MIMETYPE,
+											ContactsContract.Data.CONTENT_TYPE)
+									.withValue(
+											ContactsContract.CommonDataKinds.GroupMembership.GROUP_ROW_ID,
+											groupId);
+							ops.add(op.build());
+						}
 
-			catch (OperationApplicationException e) {
-				MainActivity.makeToast(mContext, "Something was wrong!!");
-				e.printStackTrace();
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			} finally {
-				// resetField();
-				SelectedItemList.INSTANCE.clear();
-				EditActivity.reDrawGridField();
+					}
 
-			}
+					try {
+						ContentProviderResult[] results = mContext.getContentResolver()
+								.applyBatch(ContactsContract.AUTHORITY, ops);
 
+						MainActivity.makeToast(mContext, selectedGroupInfo.getDisplayName()+
+								"グループに " + results.length + " 人追加しました ");
+
+					}
+
+					catch (OperationApplicationException e) {
+						MainActivity.makeToast(mContext, "Something was wrong!!");
+						e.printStackTrace();
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					} finally {
+						
+						SelectedItemList.INSTANCE.clear();
+						EditActivity.setAllselectVisibility(true);
+						EditActivity.setAllClearVisibility(false);
+						EditActivity.setDisconnectMenuVisibility(false);
+
+						EditActivity.reDrawGridField();
+						
+						
+
+					}
+				}	
+								
+			});
+			Insert.show();
 		}
+			
 	}
 
 	public static int getRawContactId(Context context, int contactId) {
@@ -172,5 +205,10 @@ public class EditMenuItemClickListener implements OnItemClickListener {
 		cursor.close();
 		return -1;
 	}
+
+	
+	
+	
+	
 
 }

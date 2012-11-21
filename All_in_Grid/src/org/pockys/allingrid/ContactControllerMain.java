@@ -1,34 +1,19 @@
 package org.pockys.allingrid;
 
 import java.util.ArrayList;
-import java.util.Set;
 
-import android.app.AlertDialog;
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.RemoteException;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.QuickContactBadge;
-import android.widget.TextView;
 
 public class ContactControllerMain implements OnItemClickListener,
 		OnItemLongClickListener {
@@ -40,25 +25,15 @@ public class ContactControllerMain implements OnItemClickListener,
 	private OnItemClickListener mOnItemClickListener = this;
 
 	private SharedPreferences sharedPreferences;
-	private SharedPreferences sortPreferences;
 
 	public ContactControllerMain(Context context) {
-		this(context, null);
-		sortPreferences = context.getSharedPreferences("sortPreference",
-				Context.MODE_PRIVATE);
-//		sharedPreferences = context.getSharedPreferences("sharePreferences",
-//				Context.MODE_PRIVATE);
-		
+		this(context, null);		
 	}
 
 	public ContactControllerMain(Context context, String selection) {
 		mContext = context;
 		mContactsCursor = getContacts(selection);
-//		sharedPreferences = context.getSharedPreferences("sharePreferences",
-//				Context.MODE_PRIVATE);
-//		sortPreferences = context.getSharedPreferences("sortPreference",
-//				Context.MODE_PRIVATE);
-
+		
 	}
 
 	public int getSize() {
@@ -70,22 +45,18 @@ public class ContactControllerMain implements OnItemClickListener,
 		ArrayList<CellInfo> contactsArrayList = new ArrayList<CellInfo>();
 
 		for (int i = 0; mContactsCursor.moveToNext() && i < maxSize; i++) {
-
 			String displayName = mContactsCursor.getString(mContactsCursor
 					.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
-			String uriString = mContactsCursor.getString(mContactsCursor
-					.getColumnIndex(ContactsContract.Data.PHOTO_URI));
+
 			String contactIdString = mContactsCursor.getString(mContactsCursor
 					.getColumnIndex(ContactsContract.Data.CONTACT_ID));
 			
 			Uri thumbnailUri = null;
-			if (uriString != null)
-				thumbnailUri = Uri.parse(uriString);
 
 			ContactCellInfo contact = new ContactCellInfo();
 			contact.setDisplayName(displayName);
 			contact.setThumbnail(thumbnailUri);
-			contact.setContactId(Integer.valueOf(contactIdString));
+			contact.setContactId(contactIdString);
 			
 
 			contactsArrayList.add(contact);
@@ -97,42 +68,34 @@ public class ContactControllerMain implements OnItemClickListener,
 
 	private Cursor getContacts(String selection) {
 
-		String[] PROJECTION = new String[] { ContactsContract.Data.CONTACT_ID,
-				ContactsContract.Data.PHOTO_URI,
-				ContactsContract.Data.DISPLAY_NAME,};
 		
-//		String CONTACTS_SORT_ORDER = sortPreferences.getString("SORT", "TEMP");
-//		String temp;
-//		SharedPreferences.Editor editor = sharedPreferences.edit();
-//		editor.putString("sort", ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC");
-//		temp = sortPreferences.getString("sort", "");
-//		
-//		if(temp == "TEMP"){
-			
-//		String temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
-//		editor.putString("sort", temp);
-//		editor.commit();
-//
-//		}
+		
 		String temp;
-		if(sortlib.INSTANCE.getCurrentSort() == 0){
-			temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+		if(IconListLib.INSTANCE.getCurrentSort() == 0){
+			temp =	ContactsContract.Contacts.DISPLAY_NAME+ " COLLATE LOCALIZED ASC";
 		}
 		else{
-			temp =	ContactsContract.Data.DISPLAY_NAME + " COLLATE LOCALIZED DESC";
+			temp =	ContactsContract.Contacts.DISPLAY_NAME + " COLLATE LOCALIZED DESC";
 		}
 
 		if (selection != null || selection == "")
 			selection += " AND ";
-		else
-			selection = "";
+		else 
+		selection = "";
 
+			String[] PROJECTION = new String[] { ContactsContract.Data.DISPLAY_NAME,
+
+					ContactsContract.Data.CONTACT_ID
+					};
+			
 		selection += ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '1'";
 		return mContext.getContentResolver().query(
 				ContactsContract.Data.CONTENT_URI, PROJECTION, selection, null,
 				temp);
+		
 	}
 
+	
 	public ArrayList<GridView> getGridFieldViews(final int numColumns,
 			final int numRows) {
 		ArrayList<GridView> gridViewList = new ArrayList<GridView>();
@@ -174,17 +137,39 @@ public class ContactControllerMain implements OnItemClickListener,
 
 		ContactCellInfo cellInfo = (ContactCellInfo) v.getTag();
 
-		int contactId = cellInfo.getContactId();
+		String contactId = cellInfo.getContactId();
 		String MailAdress = cellInfo.getMailAdress();
-		if (SelectedItemList.INSTANCE.contain(contactId)) {
+		if (SelectedItemList.INSTANCE.contain(Integer.valueOf(contactId))) {
 			v.setBackgroundColor(Color.TRANSPARENT);
 
-			SelectedItemList.INSTANCE.remove(contactId);
+			SelectedItemList.INSTANCE.remove(Integer.valueOf(contactId));
 		} else {
-			v.setBackgroundColor(Color.WHITE);
+			v.setBackgroundColor(EditGridItemClickListener.BACKGROUND_COLOR);
 
-			SelectedItemList.INSTANCE.add(contactId);
+			SelectedItemList.INSTANCE.add(Integer.valueOf(contactId));
 			SelectedItemList.INSTANCE.addMail(MailAdress);
+		}
+		
+		if (SelectedItemList.INSTANCE.getSize() > 0) {
+			
+			if(SelectedItemList.INSTANCE.getSize() == 1){
+				MainActivity.setPhoneMenuVisibility(true);
+				MainActivity.setSendMailtMenuVisibility(true);
+				MainActivity.setAllClearVisibility(true);
+				MainActivity.setAllselectVisibility(true);
+			}
+			else{
+				MainActivity.setPhoneMenuVisibility(false);
+				MainActivity.setSendMailtMenuVisibility(true);
+				MainActivity.setAllClearVisibility(true);
+				MainActivity.setAllselectVisibility(true);
+			}
+			
+		} 
+		else {
+			MainActivity.setSendMailtMenuVisibility(false);
+			MainActivity.setPhoneMenuVisibility(false);
+			MainActivity.setAllClearVisibility(false);
 		}
 
 		SelectedItemList.INSTANCE.logContactIdList(TAG);

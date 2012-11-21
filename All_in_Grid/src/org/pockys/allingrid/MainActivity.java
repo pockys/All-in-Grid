@@ -2,34 +2,25 @@ package org.pockys.allingrid;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 import android.app.ActionBar;
-import android.app.ActionBar.OnMenuVisibilityListener;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-<<<<<<< HEAD
+import android.view.Menu;
 import android.database.Cursor;
 import android.net.Uri;
-=======
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 import android.os.Bundle;
 import android.provider.ContactsContract;
-<<<<<<< HEAD
+
 import android.provider.ContactsContract.CommonDataKinds;
-=======
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,40 +39,32 @@ import com.viewpagerindicator.LinePageIndicator;
 public class MainActivity extends Activity{
 
 	static final String TAG = "MainActivity";
-<<<<<<< HEAD
-	
+
 	static final String TAG2 = "Check";
 	
-	private static final int MENU_SAMP = 0;
-=======
-	private static ViewPager mGridField;
-	private static ViewPager mMenuField;
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 
-<<<<<<< HEAD
 	private static ViewPager mGridField;
 	private static ViewPager mMenuField;
 
-=======
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 	private ActionBar mActionBar;
 
 	private int menuFieldCurrentItem = 0;
 
 	private MenuController mMenuController;
 	private ContactControllerMain mContactController;
-
-	// private ArrayList<GridView> currentGridViewList = new
-	// ArrayList<GridView>();
-
 	private static CirclePageIndicator mCirclePageIndicator;
 	private LinePageIndicator mLinePageIndicator;
-
 	private static Context mContext;
 
+	private static Menu mMenu;
+	
 	private static GroupCellInfo currentGroupInfo = MenuController.AllGroupCellInfo;
 	private static Hashtable<GroupCellInfo, Integer> currentItemTable = new Hashtable<GroupCellInfo, Integer>();
-
+	
+	SharedPreferences FirstSharedPreferences;
+	String first = "first";
+	
+	
 	public static Hashtable<GroupCellInfo, Integer> cloneCurrentItemTable() {
 		return (Hashtable<GroupCellInfo, Integer>) currentItemTable.clone();
 	}
@@ -126,10 +110,100 @@ public class MainActivity extends Activity{
 	public static void setCurrentGroupInfo(GroupCellInfo currentGroupInfo) {
 		MainActivity.currentGroupInfo = currentGroupInfo;
 	}
+	
+	public static void setAllselectVisibility(boolean visible) {
+		mMenu.findItem(R.id.menu_all_select).setVisible(visible);
+
+	}
+
+	public static void setAllClearVisibility(boolean visible) {
+		mMenu.findItem(R.id.menu_all_clear).setVisible(visible);
+
+	}
+	
+	public void FirstTutorial(){
+		
+		AlertDialog.Builder TutorialDialogBuilder = new AlertDialog.Builder(this);
+		TutorialDialogBuilder.setTitle("使用する前に");
+		TutorialDialogBuilder.setIcon(R.drawable.ic_char_face001);
+		TutorialDialogBuilder.setMessage("キャラグルを使用するにあたって、「設定」＞「アカウントと同期」でグーグルアカウントと連絡先の同期にチェックを入れてください。" +
+				"また、Gmailのグループを作成してこのアプリを利用してください");
+		TutorialDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				
+				AlertDialog.Builder TutorialDialogBuilderFirst = new AlertDialog.Builder(mContext);		
+				TutorialDialogBuilderFirst.setTitle("メイン画面");
+				LayoutInflater inflater = LayoutInflater.from(mContext);  
+		        final View image1 = inflater.inflate(R.layout.tutorial_image,null);  
+		        ImageView tutorialImage = (ImageView)image1.findViewById(R.id.tutorialImage); 
+		        tutorialImage.setImageResource(R.drawable.ic_tutorial_001);
+		        
+		        TutorialDialogBuilderFirst.setView(image1);
+		        TutorialDialogBuilderFirst.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface arg0, int arg1) {
+						// TODO Auto-generated method stub
+				
+						AlertDialog.Builder TutorialDialogBuilderSecond = new AlertDialog.Builder(mContext);		
+						TutorialDialogBuilderSecond.setTitle("エディット画面");
+						LayoutInflater inflater = LayoutInflater.from(mContext);  
+				        final View image2 = inflater.inflate(R.layout.tutorial_image,null);  
+				        ImageView tutorialImage = (ImageView)image2.findViewById(R.id.tutorialImage); 
+				        tutorialImage.setImageResource(R.drawable.ic_tutorial_002);
+				        
+				        TutorialDialogBuilderSecond.setView(image2);
+				        TutorialDialogBuilderSecond.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+							
+							@Override
+							public void onClick(DialogInterface arg0, int arg1) {
+						
+								AlertDialog.Builder TutorialDialogBuilderThird = new AlertDialog.Builder(mContext);		
+								TutorialDialogBuilderThird.setTitle("エディット画面");
+								LayoutInflater inflater = LayoutInflater.from(mContext);  
+						        final View image3 = inflater.inflate(R.layout.tutorial_image,null);  
+						        ImageView tutorialImage = (ImageView)image3.findViewById(R.id.tutorialImage); 
+						        tutorialImage.setImageResource(R.drawable.ic_tutorial_003);
+						        
+						        TutorialDialogBuilderThird.setView(image3);
+						        TutorialDialogBuilderThird.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+									
+									@Override
+									public void onClick(DialogInterface arg0, int arg1) {
+										// TODO Auto-generated method stub
+										
+									}
+						        });
+								// TODO Auto-generated method stub
+						        TutorialDialogBuilderThird.create().show();
+								
+							}
+						});
+					
+				        TutorialDialogBuilderSecond.create().show();
+					}}); 
+		        
+				TutorialDialogBuilderFirst.create().show();
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		TutorialDialogBuilder.create().show();
+		
+		SharedPreferences.Editor editor = FirstSharedPreferences.edit();
+		editor.putInt(first, 1).commit();
+	}
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		FirstSharedPreferences = this.getSharedPreferences("FirstSharePreferences",
+				Context.MODE_PRIVATE);
+		
+		int flag = FirstSharedPreferences.getInt(first, -1);
+		if(flag ==- 1)FirstTutorial();
 
 		mActionBar = getActionBar();
 		mActionBar.setDisplayHomeAsUpEnabled(false);
@@ -141,6 +215,7 @@ public class MainActivity extends Activity{
 		mContext = this;
 
 	}
+	
 
 	public void onStart() {
 		super.onStart();
@@ -148,13 +223,9 @@ public class MainActivity extends Activity{
 		Log.d(TAG, "onStart");
 
 		mMenuController = new MenuController(this);
-<<<<<<< HEAD
+
 		mContactController = new ContactControllerMain(this,
-=======
-		mContactController = new ContactController(this,
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 				getSelection(getCurrentGroupInfo()));
-		// currentGridViewList = mContactController.getGridFieldViews(4, 4);
 
 		mGridField.setAdapter(new CellPagerAdapter(mContactController
 				.getGridFieldViews(4, 4)));
@@ -171,13 +242,12 @@ public class MainActivity extends Activity{
 
 	public void onResume() {
 		super.onResume();
-<<<<<<< HEAD
-		mActionBar.setTitle(currentGroupInfo.getDisplayName());
-=======
 
+		
 		mActionBar.setTitle(currentGroupInfo.getDisplayName());
 
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
+
+		
 		mGridField.setCurrentItem(getCurrentItem());
 		mCirclePageIndicator.setCurrentItem(getCurrentItem());
 		mMenuField.setCurrentItem(menuFieldCurrentItem);
@@ -214,15 +284,15 @@ public class MainActivity extends Activity{
 
 		if (currentGroupTitle == "All" && mGridField.getCurrentItem() == 0) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Do you want to quit?");
-			builder.setPositiveButton("Yes", new OnClickListener() {
+			builder.setTitle("終了しますか?");
+			builder.setPositiveButton("OK", new OnClickListener() {
 
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					finish();
 				}
 			});
-			builder.setNegativeButton("No", null);
+			builder.setNegativeButton("ちょっとまった！", null);
 			builder.create().show();
 
 		} else if (currentGroupTitle != "All"
@@ -237,11 +307,8 @@ public class MainActivity extends Activity{
 			mActionBar.setDisplayHomeAsUpEnabled(false);
 			mActionBar.setTitle("All");
 
-<<<<<<< HEAD
+
 			mContactController = new ContactControllerMain(this, null);
-=======
-			mContactController = new ContactController(this, null);
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 			mGridField.setAdapter(new CellPagerAdapter(mContactController
 					.getGridFieldViews(4, 4)));
 			mGridField.setCurrentItem(getCurrentItem());
@@ -258,34 +325,52 @@ public class MainActivity extends Activity{
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
+		mMenu = menu;
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		String currentGroupTitle = currentGroupInfo.getDisplayName();
-if(currentGroupTitle != "All"){
-		MenuItem Samp = menu.add(0, MENU_SAMP,0,"サンプル");
-		Samp.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-}
+
 		return true;
+	}
+	
+	
+	public static void setSendMailtMenuVisibility(boolean visible) {
+		mMenu.findItem(R.id.send_mail).setVisible(visible);
+
+	}
+	
+	public static void setPhoneMenuVisibility(boolean visible) {
+		mMenu.findItem(R.id.menu_phone).setVisible(visible);
+
+	}
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		MenuItem SendMailMenu = menu.findItem(R.id.send_mail);
+		MenuItem PhoneMenu = menu.findItem(R.id.menu_phone);
+		if (SelectedItemList.INSTANCE.getSize() > 0) {
+			if(SelectedItemList.INSTANCE.getSize() == 1){
+				PhoneMenu.setVisible(true);
+				SendMailMenu.setVisible(true);
+			}
+			else{
+			SendMailMenu.setVisible(true);
+			PhoneMenu.setVisible(false);
+			}
+
+		} else {
+			SendMailMenu.setVisible(false);
+			PhoneMenu.setVisible(false);
+		}
+
+		return super.onPrepareOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// makeToast(this, item.getTitle().toString());
-
-
-		
-		
+				
 		Intent intent;
-		// ContactController contactController;
-
-		switch (item.getItemId()) {
-		case MENU_SAMP:
-			
-
-			makeToast(mContext, "Yes");
-			break;
-			
-			
 		
+		switch (item.getItemId()) {
+				
+				
 		case android.R.id.home:
 
 			ActionBar actionBar = this.getActionBar();
@@ -299,25 +384,9 @@ if(currentGroupTitle != "All"){
 			resetGridField(MenuController.AllGroupCellInfo);
 
 			break;
-<<<<<<< HEAD
 
-=======
-		// case R.id.menu_phone:
-		// intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"));
-		// startActivity(intent);
-		// break;
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 		case R.id.menu_edit:
 			intent = new Intent(this, EditActivity.class);
-			startActivity(intent);
-			break;
-		case R.id.menu_add:
-			intent = new Intent(Intent.ACTION_INSERT);
-
-			String packageName = "com.android.contacts";
-			String className = ".activities.PeopleActivity";
-			intent.setComponent(new ComponentName(packageName, packageName
-					+ className));
 			startActivity(intent);
 			break;
 			
@@ -346,12 +415,13 @@ if(currentGroupTitle != "All"){
 				
 				phone_number.moveToFirst();
 				s2 = s2.append(phone_number.getString(0));
+				makeToast(mContext, s2.toString());
 			}
 
 			Intent phone_intent = new Intent();
 			phone_intent.setAction(Intent.ACTION_DIAL);
 			phone_intent.setData(Uri.parse("tel:"+s2));
-			
+			startActivity(phone_intent);
 			
 			break;
 			
@@ -399,38 +469,85 @@ if(currentGroupTitle != "All"){
 			
 		case R.id.sort:
 						
-			sortlib.INSTANCE.setCurrentSort(1);
-
+			if(IconListLib.INSTANCE.getCurrentSort() == 0){
+			IconListLib.INSTANCE.setCurrentSort(1);
+			}
+			else{
+				IconListLib.INSTANCE.setCurrentSort(0);
+				
+			}
 			resetGridField();			
-//			mMenuController = new MenuController(this);
-//			mContactController = new ContactControllerMain(this,
-//					getSelection(getCurrentGroupInfo()));
 
-//			mGridField.setAdapter(new CellPagerAdapter(mContactController
-//					.getGridFieldViews(4, 4)));
-//
-//			mCirclePageIndicator = (CirclePageIndicator) findViewById(R.id.circle_page_indicator_grid);
-//			mCirclePageIndicator.setViewPager(mGridField);
-//
-//			mMenuField.setAdapter(new CellPagerAdapter(mMenuController
-//					.getMenuFieldViews(4)));
-//
-//			mLinePageIndicator = (LinePageIndicator) findViewById(R.id.line_page_indicator_menu);
-//			mLinePageIndicator.setViewPager(mMenuField);
-//
-//			mActionBar.setTitle(currentGroupInfo.getDisplayName());
-//			mGridField.setCurrentItem(getCurrentItem());
-//			mCirclePageIndicator.setCurrentItem(getCurrentItem());
-//			mMenuField.setCurrentItem(menuFieldCurrentItem);
-//			mLinePageIndicator.setCurrentItem(menuFieldCurrentItem);
-//
-//			Log.d(TAG, "onResume: gridField currentGroup: "
-//					+ getCurrentGroupInfo().getDisplayName() + " currentItem: "
-//					+ getCurrentItem());
-//
-//			SelectedItemList.INSTANCE.setSelectedGroupInfo(currentGroupInfo);
 			
 			break;
+			
+		
+
+		case R.id.menu_all_select:
+
+			ContactControllerEdit contactControllerAllSelect = new ContactControllerEdit(this,
+					getSelection(currentGroupInfo));
+			ArrayList<GridView> gridViewListAllSelect = contactControllerAllSelect
+					.getGridFieldViews(4, 4);
+			Log.d(TAG, "gridViewList size: " + gridViewListAllSelect.size());
+			for (int i = 0; i < gridViewListAllSelect.size(); i++) {
+				GridView gridView = gridViewListAllSelect.get(i);
+				for (int j = 0; j < gridView.getAdapter().getCount(); j++) {
+					View cell = gridView.getAdapter()
+							.getView(j, null, gridView);
+					ContactCellInfo contactInfo = (ContactCellInfo) cell
+							.getTag();
+					String contactIdAll = contactInfo.getContactId();
+
+					Log.d(TAG, "[" + i + ", " + j + "]" + "contactId: "
+							+ contactIdAll);
+					
+					SelectedItemList.INSTANCE.add(Integer.valueOf(contactIdAll));
+					setAllselectVisibility(false);
+					setAllClearVisibility(true);
+					
+				}
+			}
+
+			reDrawGridField();
+
+			return true;
+			
+	
+		case R.id.menu_all_clear:
+
+			ContactControllerEdit contactControllerAllClear = new ContactControllerEdit(this,
+					getSelection(currentGroupInfo));
+			ArrayList<GridView> gridViewListAllClear = contactControllerAllClear
+					.getGridFieldViews(4, 4);
+			Log.d(TAG, "gridViewList size: " + gridViewListAllClear.size());
+			for (int i = 0; i < gridViewListAllClear.size(); i++) {
+				GridView gridView = gridViewListAllClear.get(i);
+				for (int j = 0; j < gridView.getAdapter().getCount(); j++) {
+					View cell = gridView.getAdapter()
+							.getView(j, null, gridView);
+					ContactCellInfo contactInfo = (ContactCellInfo) cell
+							.getTag();
+					String contactIdAll = contactInfo.getContactId();
+
+					Log.d(TAG, "[" + i + ", " + j + "]" + "contactId: "
+							+ contactIdAll);
+					
+					SelectedItemList.INSTANCE.remove(Integer.valueOf(contactIdAll));
+					setAllselectVisibility(true);
+					setAllClearVisibility(false);
+					
+				}
+			}
+
+			reDrawGridField();
+
+			return true;
+
+		case R.id.manual:
+			FirstTutorial();
+			
+			return false;
 			
 		case R.id.menu_shuffle_icons:
 
@@ -459,7 +576,6 @@ if(currentGroupTitle != "All"){
 
 					textView.setText(items[position]);
 
-					// Log.d(TAG, "textView text:  " + items[position]);
 
 					return textView;
 				}
@@ -512,7 +628,7 @@ if(currentGroupTitle != "All"){
 						AlertDialog.Builder categoryDialogBuilder = new AlertDialog.Builder(
 								mContext);
 
-						categoryDialogBuilder.setTitle("Change Icon");
+						categoryDialogBuilder.setTitle("アイコン チェンジ");
 						categoryDialogBuilder.setView(gridView);
 
 						final AlertDialog categoryDialog = categoryDialogBuilder
@@ -523,63 +639,45 @@ if(currentGroupTitle != "All"){
 							@Override
 							public void onItemClick(AdapterView<?> container,
 									View view, int position, long id) {
-
+								
 								categoryDialog.dismiss();
+
 								IconListLib.INSTANCE
 										.setCurrentCategoy(position + 1);
 
 								SharedPreferences.Editor editor = sharedPreferences
 										.edit();
 
-								ArrayList<GridView> currentGridViews = new ContactController(
+								ArrayList<GridView> currentGridViews = new ContactControllerMain(
 										mContext,
 										getSelection(currentGroupInfo))
 										.getGridFieldViews(4, 4);
 
 								Log.d(TAG, "currentGridViews size: "
 										+ currentGridViews);
+								
 								for (int i = 0; i < currentGridViews.size(); i++) {
 
 									GridView gridView = currentGridViews.get(i);
-									Log.d(TAG, "[" + i + "]"
-											+ " gridView Child Count: "
-											+ gridView.getAdapter().getCount());
-
+									
 									for (int j = 0; j < gridView.getAdapter()
 											.getCount(); j++) {
 
 										View cell = gridView.getAdapter()
 												.getView(j, null, gridView);
-										ContactCellInfo contactInfo = (ContactCellInfo) cell
-												.getTag();
-										int contactId = contactInfo
-												.getContactId();
-
-										int imageNum = sharedPreferences
-												.getInt(Integer
-														.toString(contactId),
-														-1);
+										ContactCellInfo contactInfo = (ContactCellInfo) cell.getTag();
+										String contactId = contactInfo.getContactId();
+										int imageNum = sharedPreferences.getInt(contactId,-1);
 
 										if (imageNum != -1) {
-											Log.d(TAG,
-													"preference to -1. contactId: "
-															+ contactId
-															+ " c: "
-															+ (position + 1));
 
-											editor.putInt(
-													Integer.toString(contactId),
+
+											editor.putInt(contactId,
 													-1);
 										}
 									}
 								}
-<<<<<<< HEAD
-								
-=======
-								// }
 
-								// editor.clear();
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 								editor.commit();
 
 								resetGridField();
@@ -608,7 +706,7 @@ if(currentGroupTitle != "All"){
 		setCurrentGroupInfo(groupInfo);
 		int currentItem = getCurrentItem();
 
-		ContactController contactController = new ContactController(mContext,
+		ContactControllerMain contactController = new ContactControllerMain(mContext,
 				getSelection(groupInfo));
 
 		mGridField.setAdapter(new CellPagerAdapter(contactController
@@ -620,34 +718,25 @@ if(currentGroupTitle != "All"){
 
 	}
 
-	public static void makeToast(Context context, String message) {
-		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-	}
-
 	public static void reDrawGridField() {
 		for (int i = 0; i < mGridField.getChildCount(); i++) {
 			GridView currentGridView = (GridView) mGridField.getChildAt(i);
 			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
 			adapter.notifyDataSetChanged();
-<<<<<<< HEAD
-=======
 
+		
 		}
 	}
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
-
-<<<<<<< HEAD
-		}
-	}
- static void reDrawMenuField() {
-=======
 	public static void reDrawMenuField() {
->>>>>>> branch 'master' of https://github.com/pockys/All-in-Grid.git
 		for (int i = 0; i < mMenuField.getChildCount(); i++) {
 			GridView currentGridView = (GridView) mMenuField.getChildAt(i);
 			BaseAdapter adapter = ((BaseAdapter) currentGridView.getAdapter());
 			adapter.notifyDataSetChanged();
 		}
+	}
+	
+	public static void makeToast(Context context, String message) {
+		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
 
 }

@@ -1,6 +1,9 @@
 package org.pockys.allingrid;
 
+import java.security.AllPermission;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +15,9 @@ import android.widget.TextView;
 public class IconListAdapter extends BaseAdapter {
 
 	private static final String TAG = "test";
-
+	
+	public SharedPreferences AllIcon;
+	
 	private LayoutInflater mLayoutInflater;
 	private Context mContext;
 
@@ -24,6 +29,8 @@ public class IconListAdapter extends BaseAdapter {
 		mType = type;
 
 		mLayoutInflater = LayoutInflater.from(mContext);
+		AllIcon = context.getSharedPreferences("AllIcon",
+				Context.MODE_PRIVATE);
 	}
 
 	@Override
@@ -65,7 +72,7 @@ public class IconListAdapter extends BaseAdapter {
 		// TODO Auto-generated method stub
 
 		if (mType == 0) {
-			return IconListLib.INSTANCE.getAllIconInfoSize();
+			return AllIcon.getAll().size();//IconListLib.INSTANCE.getAllIconInfoSize();
 		} else {
 
 			return IconListLib.INSTANCE.getListViewIconInfoSize();
@@ -76,9 +83,11 @@ public class IconListAdapter extends BaseAdapter {
 	@Override
 	public Object getItem(int position) {
 		// TODO Auto-generated method stub
+		int temp = AllIcon.getInt(Integer.toString(position + 1), -1);
+		IconInfo tempture = new IconInfo(temp, null);
 
 		if (mType == 0) {
-			return IconListLib.INSTANCE.getAllIconInfo(position);
+			return tempture;
 		} else {
 			return IconListLib.INSTANCE.getListViewIconInfo(position);
 
